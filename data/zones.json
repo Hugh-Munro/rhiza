@@ -1,0 +1,22 @@
+{
+  "woods": {
+    "name": "Woods",
+    "light": "Low",
+    "soil": "Clay loam"
+  },
+  "field": {
+    "name": "Field",
+    "light": "Full sun",
+    "soil": "Sandy loam"
+  },
+  "orchard": {
+    "name": "Orchard",
+    "light": "Partial",
+    "soil": "Loam"
+  },
+  "gravel": {
+    "name": "Gravel",
+    "light": "Full sun",
+    "soil": "Gravel / free draining"
+  }
+}
