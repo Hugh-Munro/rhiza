@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rhiza</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/svg+xml" href="public/favicon.svg" />
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>Rhiza</h1>
+    <div class="stats">
+      <div class="stat"><span class="stat-num" id="stat-plants">—</span><span class="stat-label">Plants</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="tabs-wrap">
+  <div class="tabs-inner">
+    <div class="tabs">
+      <button class="tab active" data-tab="plants">Plants</button>
+    </div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="btn-grid" title="Card view" aria-label="Card view">
+        <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
+          <rect x="1" y="1" width="5.5" height="5.5" rx="1" fill="currentColor"/>
+          <rect x="8.5" y="1" width="5.5" height="5.5" rx="1" fill="currentColor"/>
+          <rect x="1" y="8.5" width="5.5" height="5.5" rx="1" fill="currentColor"/>
+          <rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1" fill="currentColor"/>
+        </svg>
+      </button>
+      <button class="view-btn" id="btn-list" title="List view" aria-label="List view">
+        <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
+          <rect x="1" y="2.5" width="13" height="1.5" rx="0.75" fill="currentColor"/>
+          <rect x="1" y="6.75" width="13" height="1.5" rx="0.75" fill="currentColor"/>
+          <rect x="1" y="11" width="13" height="1.5" rx="0.75" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="search" type="search" placeholder="Search plants…" autocomplete="off" />
+    </div>
+    <button class="filter-toggle" id="filter-toggle">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      <span id="filter-toggle-label">Filter</span>
+    </button>
+    <span class="count-label" id="count-label"></span>
+  </div>
+
+  <div id="filter-bar"></div>
+
+  <div id="grid-view" class="card-grid"></div>
+
+  <div id="list-view" class="table-wrap hidden">
+    <table id="main-table">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
