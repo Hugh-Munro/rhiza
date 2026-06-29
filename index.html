@@ -7,11 +7,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/svg+xml" href="public/favicon.svg" />
 </head>
 <body>
-
 <header>
   <div class="header-inner">
     <h1>Rhiza</h1>
@@ -20,13 +20,14 @@
     </div>
   </div>
 </header>
-
 <div class="tabs-wrap">
   <div class="tabs-inner">
     <div class="tabs">
       <button class="tab active" data-tab="plants">Plants</button>
+      <button class="tab" data-tab="map">Map</button>
+      <button class="tab" data-tab="network">Network</button>
     </div>
-    <div class="view-toggle">
+    <div class="view-toggle" id="view-toggle">
       <button class="view-btn active" id="btn-grid" title="Card view" aria-label="Card view">
         <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
           <rect x="1" y="1" width="5.5" height="5.5" rx="1" fill="currentColor"/>
@@ -45,36 +46,132 @@
     </div>
   </div>
 </div>
-
 <main>
-  <div class="toolbar">
-    <div class="search-wrap">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input id="search" type="search" placeholder="Search plants…" autocomplete="off" />
+
+  <!-- Plants tab -->
+  <div id="tab-plants">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input id="search" type="search" placeholder="Search plants…" autocomplete="off" />
+      </div>
+      <button class="filter-toggle" id="filter-toggle">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        <span id="filter-toggle-label">Filter</span>
+      </button>
+      <span class="count-label" id="count-label"></span>
     </div>
-    <button class="filter-toggle" id="filter-toggle">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-      </svg>
-      <span id="filter-toggle-label">Filter</span>
-    </button>
-    <span class="count-label" id="count-label"></span>
+    <div id="filter-bar"></div>
+    <div id="grid-view" class="card-grid"></div>
+    <div id="list-view" class="table-wrap hidden">
+      <table id="main-table">
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
   </div>
 
-  <div id="filter-bar"></div>
-
-  <div id="grid-view" class="card-grid"></div>
-
-  <div id="list-view" class="table-wrap hidden">
-    <table id="main-table">
-      <thead id="table-head"></thead>
-      <tbody id="table-body"></tbody>
-    </table>
+  <!-- Map tab -->
+  <div id="tab-map" class="hidden">
+    <div class="map-wrap">
+      <div id="leaflet-map"></div>
+      <div class="map-panel" id="map-panel">
+        <div class="map-panel-empty" id="map-panel-empty">
+          <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+            <path d="M24 42 C24 42 24 22 24 16 C24 9 17 5 10 7 C17 9 22 16 24 22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M24 30 C24 30 24 22 29 17 C34 12 41 12 41 12 C41 12 36 19 29 23 C26.5 24.5 24 30 24 30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <p>Click a zone to explore</p>
+        </div>
+        <div class="map-panel-content hidden" id="map-panel-content">
+          <div class="map-panel-header">
+            <span class="map-panel-zone-name" id="map-panel-name"></span>
+          </div>
+          <div class="map-panel-props" id="map-panel-props"></div>
+          <div class="map-panel-plants-label">Plants in this zone</div>
+          <div class="map-plant-list" id="map-plant-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="map-toolbar">
+      <button class="map-btn active" id="btn-draw-mode">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+        </svg>
+        Draw zone
+      </button>
+      <select class="map-zone-select" id="map-zone-select">
+        <option value="woods">Woods</option>
+        <option value="field">Field</option>
+        <option value="orchard">Orchard</option>
+        <option value="gravel">Gravel</option>
+      </select>
+      <button class="map-btn" id="btn-clear-zone">Clear selected zone</button>
+      <button class="map-btn" id="btn-export">Export zones.json</button>
+      <span class="map-hint" id="map-hint">Select a zone and click the map to draw its boundary</span>
+    </div>
   </div>
+
+  <!-- Network tab -->
+  <div id="tab-network" class="hidden">
+    <div class="net-wrap">
+      <div class="net-sidebar">
+        <div class="net-sidebar-label">Zone</div>
+        <div class="net-filter-row active" data-filter="all">
+          <div class="net-dot" style="background:#3d2b1f"></div>All zones
+        </div>
+        <div class="net-filter-row" data-filter="Woods">
+          <div class="net-dot" style="background:#4a7c59"></div>Woods
+        </div>
+        <div class="net-filter-row" data-filter="Field">
+          <div class="net-dot" style="background:#c8b865"></div>Field
+        </div>
+        <div class="net-filter-row" data-filter="Orchard">
+          <div class="net-dot" style="background:#c17f4a"></div>Orchard
+        </div>
+        <div class="net-filter-row" data-filter="Gravel">
+          <div class="net-dot" style="background:#b0a898"></div>Gravel
+        </div>
+        <div class="net-sidebar-label">Legend</div>
+        <div class="net-legend-item">
+          <div class="net-legend-line net-legend-adjacency"></div>Zone adjacency
+        </div>
+        <div class="net-legend-item">
+          <div class="net-legend-line net-legend-membership"></div>Plant membership
+        </div>
+        <div class="net-legend-item">
+          <div class="net-dot" style="background:#c17f4a;border:1.5px solid #9a6035"></div>Perennial
+        </div>
+        <div class="net-legend-item">
+          <div class="net-dot" style="background:#7aab6e;border:1.5px solid #4a7a3e"></div>Annual
+        </div>
+        <div class="net-sel-box" id="net-sel-box">
+          <div class="net-sidebar-label">Selection</div>
+          <div class="net-sel-name" id="net-sel-name"></div>
+          <div class="net-sel-meta" id="net-sel-meta"></div>
+        </div>
+      </div>
+      <div class="net-canvas-wrap">
+        <canvas id="net-canvas"></canvas>
+        <div class="net-card" id="net-card">
+          <button class="net-card-close" id="net-card-close">✕</button>
+          <div class="net-card-name" id="net-card-name"></div>
+          <div class="net-card-type" id="net-card-type"></div>
+          <div class="net-card-divider"></div>
+          <div id="net-card-rows"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </main>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>
+<script src="map.js"></script>
+<script src="network.js"></script>
 </body>
 </html>
