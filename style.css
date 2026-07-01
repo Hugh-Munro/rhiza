@@ -325,7 +325,11 @@ td.muted { color: #999; font-size: 0.82rem; }
   height: 560px;
 }
 
-#leaflet-map { height: 100%; width: 100%; }
+#garden-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 
 .map-panel {
   background: var(--card);

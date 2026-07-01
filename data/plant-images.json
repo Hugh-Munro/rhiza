@@ -16,7 +16,8 @@
   "Sycamore": "https://static.inaturalist.org/photos/53697442/medium.jpeg",
   "Raspberry": "https://inaturalist-open-data.s3.amazonaws.com/photos/358785151/medium.jpg",
   "Hornbeam": "https://static.inaturalist.org/photos/566113101/medium.jpg",
-  "Perennial Ryegrass": "https://inaturalist-open-data.s3.amazonaws.com/photos/238799434/medium.jpg",
+  "Perennial Ryegrass": "https://inaturalist-open-data.s3.amazonaws.com/photos/238799434/medium.jpg"
+,
   "Hollyhock": "https://static.inaturalist.org/photos/153872572/medium.jpg",
   "Garden Rocket": "https://inaturalist-open-data.s3.amazonaws.com/photos/280772297/medium.jpeg",
   "Apple": "https://inaturalist-open-data.s3.amazonaws.com/photos/2066379/medium.JPG",
@@ -25,5 +26,16 @@
   "Grape": "https://inaturalist-open-data.s3.amazonaws.com/photos/2809716/medium.jpg",
   "Cherry Laurel": "https://inaturalist-open-data.s3.amazonaws.com/photos/146285013/medium.jpg",
   "Buddleja": "https://static.inaturalist.org/photos/55578/medium.jpg",
-  "Tomato": "https://inaturalist-open-data.s3.amazonaws.com/photos/232226140/medium.jpg"
+  "Tomato": "https://inaturalist-open-data.s3.amazonaws.com/photos/232226140/medium.jpg",
+  "Yellow Rose": "https://inaturalist-open-data.s3.amazonaws.com/photos/122545712/medium.jpeg",
+  "Pink Rose": "https://inaturalist-open-data.s3.amazonaws.com/photos/220166524/medium.jpeg",
+  "Red Rose": "https://inaturalist-open-data.s3.amazonaws.com/photos/633279/medium.jpg",
+  "Cherry Blossom": "https://inaturalist-open-data.s3.amazonaws.com/photos/94761507/medium.jpeg",
+  "Hydrangea": "https://inaturalist-open-data.s3.amazonaws.com/photos/79182087/medium.jpg",
+  "Strawberry": "https://inaturalist-open-data.s3.amazonaws.com/photos/91052/medium.jpg",
+  "Lavender": "https://inaturalist-open-data.s3.amazonaws.com/photos/116644427/medium.jpeg",
+  "Crocosmia": "https://inaturalist-open-data.s3.amazonaws.com/photos/43084170/medium.jpg",
+  "Geranium": "https://inaturalist-open-data.s3.amazonaws.com/photos/70283238/medium.jpg",
+  "Acer": "https://inaturalist-open-data.s3.amazonaws.com/photos/27342760/medium.jpeg",
+  "Willow Tree": "https://inaturalist-open-data.s3.amazonaws.com/photos/59393301/medium.jpeg"
 }

@@ -74,47 +74,29 @@
       </table>
     </div>
   </div>
-
-  <!-- Map tab -->
-  <div id="tab-map" class="hidden">
-    <div class="map-wrap">
-      <div id="leaflet-map"></div>
-      <div class="map-panel" id="map-panel">
-        <div class="map-panel-empty" id="map-panel-empty">
-          <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-            <path d="M24 42 C24 42 24 22 24 16 C24 9 17 5 10 7 C17 9 22 16 24 22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M24 30 C24 30 24 22 29 17 C34 12 41 12 41 12 C41 12 36 19 29 23 C26.5 24.5 24 30 24 30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
-          <p>Click a zone to explore</p>
+<!-- Map tab -->
+<div id="tab-map" class="hidden">
+  <div class="map-wrap">
+    <canvas id="garden-canvas"></canvas>
+    <div class="map-panel" id="map-panel">
+      <div class="map-panel-empty" id="map-panel-empty">
+        <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+          <path d="M24 42 C24 42 24 22 24 16 C24 9 17 5 10 7 C17 9 22 16 24 22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M24 30 C24 30 24 22 29 17 C34 12 41 12 41 12 C41 12 36 19 29 23 C26.5 24.5 24 30 24 30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <p>Click a zone to explore</p>
+      </div>
+      <div class="map-panel-content hidden" id="map-panel-content">
+        <div class="map-panel-header">
+          <span class="map-panel-zone-name" id="map-panel-name"></span>
         </div>
-        <div class="map-panel-content hidden" id="map-panel-content">
-          <div class="map-panel-header">
-            <span class="map-panel-zone-name" id="map-panel-name"></span>
-          </div>
-          <div class="map-panel-props" id="map-panel-props"></div>
-          <div class="map-panel-plants-label">Plants in this zone</div>
-          <div class="map-plant-list" id="map-plant-list"></div>
-        </div>
+        <div class="map-panel-props" id="map-panel-props"></div>
+        <div class="map-panel-plants-label">Plants in this zone</div>
+        <div class="map-plant-list" id="map-plant-list"></div>
       </div>
     </div>
-    <div class="map-toolbar">
-      <button class="map-btn active" id="btn-draw-mode">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-        </svg>
-        Draw zone
-      </button>
-      <select class="map-zone-select" id="map-zone-select">
-        <option value="woods">Woods</option>
-        <option value="field">Field</option>
-        <option value="orchard">Orchard</option>
-        <option value="gravel">Gravel</option>
-      </select>
-      <button class="map-btn" id="btn-clear-zone">Clear selected zone</button>
-      <button class="map-btn" id="btn-export">Export zones.json</button>
-      <span class="map-hint" id="map-hint">Select a zone and click the map to draw its boundary</span>
-    </div>
   </div>
+</div>
 
   <!-- Network tab -->
   <div id="tab-network" class="hidden">
@@ -135,6 +117,24 @@
         </div>
         <div class="net-filter-row" data-filter="Gravel">
           <div class="net-dot" style="background:#b0a898"></div>Gravel
+        </div>
+        <div class="net-filter-row" data-filter="Side Garden">
+          <div class="net-dot" style="background:#c47aab"></div>Side Garden
+        </div>
+        <div class="net-filter-row" data-filter="Lower Back Garden">
+          <div class="net-dot" style="background:#7aab8a"></div>Lower Back Garden
+        </div>
+        <div class="net-filter-row" data-filter="Front Garden">
+          <div class="net-dot" style="background:#d4c46a"></div>Front Garden
+        </div>
+        <div class="net-filter-row" data-filter="Upper Back Garden">
+          <div class="net-dot" style="background:#5a8a6a"></div>Upper Back Garden
+        </div>
+        <div class="net-filter-row" data-filter="Back Field">
+          <div class="net-dot" style="background:#c8b46a"></div>Back Field
+        </div>
+        <div class="net-filter-row" data-filter="House">
+          <div class="net-dot" style="background:#c4956a"></div>House
         </div>
         <div class="net-sidebar-label">Legend</div>
         <div class="net-legend-item">

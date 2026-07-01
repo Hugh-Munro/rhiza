@@ -6,10 +6,17 @@ const PLANT_ICON = `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.or
 
 // ── Zone colours ──────────────────────────────────────────────────────────
 const ZONE_COLOURS = {
-  'Woods': { bg: '#d1ead4', color: '#2a6b30' },
-  'Field': { bg: '#fde8c0', color: '#8a5200' },
+  'Woods':             { bg: '#d1ead4', color: '#2a6b30' },
+  'Field':             { bg: '#fde8c0', color: '#8a5200' },
+  'Orchard':           { bg: '#fde8c0', color: '#9a6035' },
+  'Gravel':            { bg: '#e8e4de', color: '#6a6058' },
+  'Side Garden':       { bg: '#f0d6e8', color: '#8a3060' },
+  'Lower Back Garden': { bg: '#d4ead8', color: '#3a6b4a' },
+  'Front Garden':      { bg: '#f5f0cc', color: '#6a6010' },
+  'Upper Back Garden': { bg: '#c8dece', color: '#2a5a3a' },
+  'Back Field':        { bg: '#f0e8c0', color: '#6a5a10' },
+  'House':             { bg: '#f0e0d0', color: '#7a5030' },
 };
-
 function zonePill(zone) {
   if (!zone) return '';
   const style = ZONE_COLOURS[zone]
@@ -297,3 +304,12 @@ document.getElementById('search').addEventListener('input', e => {
   document.getElementById('stat-plants').textContent = cache['plants'].length;
   render();
 })();
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  const map = { p: 'plants', n: 'network', m: 'map' };
+  const tab = map[e.key.toLowerCase()];
+  if (!tab) return;
+  document.querySelector(`.tab[data-tab="${tab}"]`)?.click();
+});

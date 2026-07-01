@@ -1,22 +1,46 @@
 // ── Zone config ───────────────────────────────────────────────────────────
 const ZONE_COLS = {
-  Woods:   { fill: '#4a7c59', stroke: '#2a6b30' },
-  Field:   { fill: '#c8b865', stroke: '#8a7a20' },
-  Orchard: { fill: '#c17f4a', stroke: '#9a6035' },
-  Gravel:  { fill: '#b0a898', stroke: '#7a7060' },
+  'Woods':             { fill: '#4a7c59', stroke: '#2a6b30' },
+  'Field':             { fill: '#c8b865', stroke: '#8a7a20' },
+  'Orchard':           { fill: '#c17f4a', stroke: '#9a6035' },
+  'Gravel':            { fill: '#b0a898', stroke: '#7a7060' },
+  'Side Garden':       { fill: '#c47aab', stroke: '#8a3060' },
+  'Lower Back Garden': { fill: '#7aab8a', stroke: '#3a6b4a' },
+  'Front Garden':      { fill: '#d4c46a', stroke: '#8a7a20' },
+  'Upper Back Garden': { fill: '#5a8a6a', stroke: '#2a5a3a' },
+  'Back Field':        { fill: '#c8b46a', stroke: '#7a6a20' },
+  'House':             { fill: '#c4956a', stroke: '#7a5030' },
 };
 
 const ZONE_POSITIONS = {
-  Woods:   Math.PI * 1.1,
-  Field:   Math.PI * 0.1,
-  Orchard: Math.PI * 0.65,
-  Gravel:  Math.PI * 1.55,
+  'Woods':             Math.PI * 1.1,
+  'Field':             Math.PI * 0.0,
+  'Orchard':           Math.PI * 0.65,
+  'Gravel':            Math.PI * 1.55,
+  'Side Garden':       Math.PI * 1.82,
+  'Lower Back Garden': Math.PI * 0.88,
+  'Front Garden':      Math.PI * 1.32,
+  'Upper Back Garden': Math.PI * 0.22,
+  'Back Field':        Math.PI * 1.78,
+  'House':             Math.PI * 1.68,
 };
 
 const ZONE_ADJACENCY = [
-  ['Woods', 'Orchard'],
-  ['Orchard', 'Field'],
-  ['Woods', 'Gravel'],
+  ['Woods',             'Orchard'],
+  ['Woods',             'Gravel'],
+  ['Woods',             'Front Garden'],
+  ['Orchard',           'Field'],
+  ['Orchard',           'Upper Back Garden'],
+  ['Orchard',           'Lower Back Garden'],
+  ['Field',             'Upper Back Garden'],
+  ['Field',             'Back Field'],
+  ['Gravel',            'Side Garden'],
+  ['Gravel',            'Front Garden'],
+  ['Gravel',            'House'],
+  ['Side Garden',       'Lower Back Garden'],
+  ['Side Garden',       'Front Garden'],
+  ['Side Garden',       'House'],
+  ['Lower Back Garden', 'Upper Back Garden'],
 ];
 
 // ── State ─────────────────────────────────────────────────────────────────
