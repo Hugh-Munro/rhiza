@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/svg+xml" href="public/favicon.svg" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
 </head>
 <body>
 <header>
@@ -99,75 +100,37 @@
 </div>
 
   <!-- Network tab -->
-  <div id="tab-network" class="hidden">
-    <div class="net-wrap">
-      <div class="net-sidebar">
-        <div class="net-sidebar-label">Zone</div>
-        <div class="net-filter-row active" data-filter="all">
-          <div class="net-dot" style="background:#3d2b1f"></div>All zones
-        </div>
-        <div class="net-filter-row" data-filter="Woods">
-          <div class="net-dot" style="background:#4a7c59"></div>Woods
-        </div>
-        <div class="net-filter-row" data-filter="Field">
-          <div class="net-dot" style="background:#c8b865"></div>Field
-        </div>
-        <div class="net-filter-row" data-filter="Orchard">
-          <div class="net-dot" style="background:#c17f4a"></div>Orchard
-        </div>
-        <div class="net-filter-row" data-filter="Gravel">
-          <div class="net-dot" style="background:#b0a898"></div>Gravel
-        </div>
-        <div class="net-filter-row" data-filter="Side Garden">
-          <div class="net-dot" style="background:#c47aab"></div>Side Garden
-        </div>
-        <div class="net-filter-row" data-filter="Lower Back Garden">
-          <div class="net-dot" style="background:#7aab8a"></div>Lower Back Garden
-        </div>
-        <div class="net-filter-row" data-filter="Front Garden">
-          <div class="net-dot" style="background:#d4c46a"></div>Front Garden
-        </div>
-        <div class="net-filter-row" data-filter="Upper Back Garden">
-          <div class="net-dot" style="background:#5a8a6a"></div>Upper Back Garden
-        </div>
-        <div class="net-filter-row" data-filter="Back Field">
-          <div class="net-dot" style="background:#c8b46a"></div>Back Field
-        </div>
-        <div class="net-filter-row" data-filter="House">
-          <div class="net-dot" style="background:#c4956a"></div>House
-        </div>
-        <div class="net-sidebar-label">Legend</div>
-        <div class="net-legend-item">
-          <div class="net-legend-line net-legend-adjacency"></div>Zone adjacency
-        </div>
-        <div class="net-legend-item">
-          <div class="net-legend-line net-legend-membership"></div>Plant membership
-        </div>
-        <div class="net-legend-item">
-          <div class="net-dot" style="background:#c17f4a;border:1.5px solid #9a6035"></div>Perennial
-        </div>
-        <div class="net-legend-item">
-          <div class="net-dot" style="background:#7aab6e;border:1.5px solid #4a7a3e"></div>Annual
-        </div>
-        <div class="net-sel-box" id="net-sel-box">
-          <div class="net-sidebar-label">Selection</div>
-          <div class="net-sel-name" id="net-sel-name"></div>
-          <div class="net-sel-meta" id="net-sel-meta"></div>
-        </div>
-      </div>
-      <div class="net-canvas-wrap">
-        <canvas id="net-canvas"></canvas>
-        <div class="net-card" id="net-card">
-          <button class="net-card-close" id="net-card-close">✕</button>
-          <div class="net-card-name" id="net-card-name"></div>
-          <div class="net-card-type" id="net-card-type"></div>
-          <div class="net-card-divider"></div>
-          <div id="net-card-rows"></div>
-        </div>
+<div id="tab-network" class="hidden">
+  <div class="net-wrap">
+    <div class="net-sidebar">
+      <div class="net-sidebar-label">Zone</div>
+      <div id="net-zone-filters"></div>
+      <div class="net-sidebar-label" style="margin-top:12px">Type</div>
+      <div id="net-type-filters"></div>
+      <div class="net-sidebar-label" style="margin-top:12px">Legend</div>
+      <div id="net-legend"></div>
+      <div class="net-sel-box" id="net-sel-box">
+        <div class="net-sidebar-label">Selection</div>
+        <div class="net-sel-name" id="net-sel-name"></div>
+        <div class="net-sel-meta" id="net-sel-meta"></div>
       </div>
     </div>
+    <div class="net-canvas-wrap">
+      <div id="net-cy"></div>
+      <div class="net-card" id="net-card">
+        <button class="net-card-close" id="net-card-close">✕</button>
+        <div class="net-card-name" id="net-card-name"></div>
+        <div class="net-card-type" id="net-card-type"></div>
+        <div class="net-card-divider"></div>
+        <div id="net-card-rows"></div>
+      </div>
+      <button id="net-reset-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Reset
+      </button>
+    </div>
   </div>
-
+</div>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>

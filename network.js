@@ -1,362 +1,357 @@
-// ── Zone config ───────────────────────────────────────────────────────────
-const ZONE_COLS = {
-  'Woods':             { fill: '#4a7c59', stroke: '#2a6b30' },
-  'Field':             { fill: '#c8b865', stroke: '#8a7a20' },
-  'Orchard':           { fill: '#c17f4a', stroke: '#9a6035' },
-  'Gravel':            { fill: '#b0a898', stroke: '#7a7060' },
-  'Side Garden':       { fill: '#c47aab', stroke: '#8a3060' },
-  'Lower Back Garden': { fill: '#7aab8a', stroke: '#3a6b4a' },
-  'Front Garden':      { fill: '#d4c46a', stroke: '#8a7a20' },
-  'Upper Back Garden': { fill: '#5a8a6a', stroke: '#2a5a3a' },
-  'Back Field':        { fill: '#c8b46a', stroke: '#7a6a20' },
-  'House':             { fill: '#c4956a', stroke: '#7a5030' },
-};
-
-const ZONE_POSITIONS = {
-  'Woods':             Math.PI * 1.1,
-  'Field':             Math.PI * 0.0,
-  'Orchard':           Math.PI * 0.65,
-  'Gravel':            Math.PI * 1.55,
-  'Side Garden':       Math.PI * 1.82,
-  'Lower Back Garden': Math.PI * 0.88,
-  'Front Garden':      Math.PI * 1.32,
-  'Upper Back Garden': Math.PI * 0.22,
-  'Back Field':        Math.PI * 1.78,
-  'House':             Math.PI * 1.68,
-};
-
-const ZONE_ADJACENCY = [
-  ['Woods',             'Orchard'],
-  ['Woods',             'Gravel'],
-  ['Woods',             'Front Garden'],
-  ['Orchard',           'Field'],
-  ['Orchard',           'Upper Back Garden'],
-  ['Orchard',           'Lower Back Garden'],
-  ['Field',             'Upper Back Garden'],
-  ['Field',             'Back Field'],
-  ['Gravel',            'Side Garden'],
-  ['Gravel',            'Front Garden'],
-  ['Gravel',            'House'],
-  ['Side Garden',       'Lower Back Garden'],
-  ['Side Garden',       'Front Garden'],
-  ['Side Garden',       'House'],
+// ── Zone adjacency ────────────────────────────────────────────────────────
+const NET_ZONE_ADJACENCY = [
+  ['Woods', 'Orchard'],
+  ['Woods', 'Gravel'],
+  ['Woods', 'Front Garden'],
+  ['Orchard', 'Field'],
+  ['Orchard', 'Upper Back Garden'],
+  ['Orchard', 'Lower Back Garden'],
+  ['Field', 'Upper Back Garden'],
+  ['Field', 'Back Field'],
+  ['Gravel', 'Side Garden'],
+  ['Gravel', 'Front Garden'],
+  ['Gravel', 'House'],
+  ['Side Garden', 'Lower Back Garden'],
+  ['Side Garden', 'Front Garden'],
+  ['Side Garden', 'House'],
   ['Lower Back Garden', 'Upper Back Garden'],
 ];
 
+const NET_ZONE_COLOURS = {
+  'Woods':             { bg: '#d1ead4', border: '#2a6b30', text: '#1a4a20' },
+  'Field':             { bg: '#f5f0c0', border: '#8a7a20', text: '#5a5010' },
+  'Orchard':           { bg: '#fde8c0', border: '#9a6035', text: '#6a3010' },
+  'Gravel':            { bg: '#e8e4de', border: '#7a7060', text: '#4a4030' },
+  'Side Garden':       { bg: '#f0d6e8', border: '#8a3060', text: '#5a1040' },
+  'Lower Back Garden': { bg: '#d4ead8', border: '#3a6b4a', text: '#1a4a2a' },
+  'Front Garden':      { bg: '#f5f0c8', border: '#8a7a20', text: '#5a5010' },
+  'Upper Back Garden': { bg: '#c8dece', border: '#2a5a3a', text: '#0a3a1a' },
+  'Back Field':        { bg: '#f0e8c0', border: '#7a6a20', text: '#4a4010' },
+  'House':             { bg: '#f0e0d0', border: '#7a5030', text: '#4a2010' },
+};
+
 // ── State ─────────────────────────────────────────────────────────────────
-let netNodes     = [];
-let netEdges     = [];
-let netSelected  = null;
-let netFilter    = 'all';
-let netAnimId    = null;
-let netReady     = false;
+let netCy          = null;
+let netInitialised = false;
+let netSelectedNode = null;
+let netActiveZone  = 'all';
 
 // ── Init ──────────────────────────────────────────────────────────────────
 function initNetwork() {
-  if (netReady) return;
-  netReady = true;
+  if (netInitialised) return;
+  netInitialised = true;
 
-  const canvas = document.getElementById('net-canvas');
-  const ctx    = canvas.getContext('2d');
+  const plants = cache['plants'] ?? [];
+  buildNetworkGraph(plants);
+  buildNetSidebar(plants);
+  buildNetLegend();
 
-  function resize() {
-    canvas.width  = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
-  }
+  document.getElementById('net-card-close').addEventListener('click', hideNetCard);
+  document.getElementById('net-reset-btn').addEventListener('click', resetNetwork);
+}
 
-  function getNode(id) {
-    return netNodes.find(n => n.id === id);
-  }
+// ── Build graph ───────────────────────────────────────────────────────────
+function buildNetworkGraph(plants, zoneFilter = 'all') {
+  if (netCy) { netCy.destroy(); netCy = null; }
 
-  // ── Build graph ───────────────────────────────────────────────────────
-  function buildGraph() {
-    netNodes = [];
-    netEdges = [];
+  const zones = [...new Set(plants.map(p => p.zone).filter(Boolean))];
+  const filteredZones = zoneFilter === 'all' ? zones : [zoneFilter];
+  const filteredPlants = plants.filter(p => filteredZones.includes(p.zone));
 
-    const W  = canvas.width;
-    const H  = canvas.height;
-    const cx = W / 2;
-    const cy = H / 2;
-
-    const allZones     = Object.keys(ZONE_COLS);
-    const visibleZones = netFilter === 'all' ? allZones : [netFilter];
-    const visiblePlants = (cache['plants'] ?? []).filter(p =>
-      netFilter === 'all' || (p.zone || '').trim() === netFilter
-    );
-
-    // Zone nodes
-    visibleZones.forEach(z => {
-      const angle = ZONE_POSITIONS[z] ?? 0;
-      const r     = Math.min(cx, cy) * 0.28;
-      netNodes.push({
-        id: 'z-' + z, label: z, type: 'zone', zone: z,
-        x: cx + Math.cos(angle) * r,
-        y: cy + Math.sin(angle) * r,
-        vx: 0, vy: 0, r: 22, fixed: true, life_cycle: '',
-      });
-    });
-
-    // Zone adjacency edges
-    ZONE_ADJACENCY.forEach(([a, b]) => {
-      if (visibleZones.includes(a) && visibleZones.includes(b)) {
-        netEdges.push({ from: 'z-' + a, to: 'z-' + b, type: 'adjacency' });
-      }
-    });
-
-    // Deduplicate plants (same plant in multiple zones)
-    const plantMap = {};
-    visiblePlants.forEach(p => {
-      const key = (p.plant || '').trim();
-      if (!key) return;
-      if (!plantMap[key]) plantMap[key] = { zones: [], life_cycle: p.life_cycle };
-      plantMap[key].zones.push((p.zone || '').trim());
-    });
-
-    // Plant nodes + membership edges
-    Object.entries(plantMap).forEach(([name, data], i) => {
-      const total  = Object.keys(plantMap).length;
-      const angle  = (i / total) * Math.PI * 2;
-      const spread = Math.min(cx, cy) * (0.52 + Math.random() * 0.3);
-      netNodes.push({
-        id: 'p-' + name, label: name, type: 'plant',
-        zone: data.zones.join(', '), life_cycle: data.life_cycle,
-        zones: data.zones,
-        x: cx + Math.cos(angle) * spread + (Math.random() - 0.5) * 35,
-        y: cy + Math.sin(angle) * spread + (Math.random() - 0.5) * 35,
-        vx: 0, vy: 0, r: 8, fixed: false,
-      });
-      data.zones.filter(z => visibleZones.includes(z)).forEach(z => {
-        netEdges.push({ from: 'z-' + z, to: 'p-' + name, type: 'membership' });
-      });
-    });
-  }
-
-  // ── Force simulation ──────────────────────────────────────────────────
-  function simulate() {
-    const cx = canvas.width  / 2;
-    const cy = canvas.height / 2;
-
-    netNodes.forEach(n => {
-      if (n.fixed) return;
-      let fx = 0, fy = 0;
-
-      // Repulsion
-      netNodes.forEach(m => {
-        if (m.id === n.id) return;
-        const dx = n.x - m.x, dy = n.y - m.y;
-        const d  = Math.sqrt(dx * dx + dy * dy) || 1;
-        fx += dx / d * (2000 / (d * d));
-        fy += dy / d * (2000 / (d * d));
-      });
-
-      // Attraction along edges
-      netEdges.forEach(e => {
-        const other = e.from === n.id ? getNode(e.to) : e.to === n.id ? getNode(e.from) : null;
-        if (!other) return;
-        const dx     = other.x - n.x, dy = other.y - n.y;
-        const d      = Math.sqrt(dx * dx + dy * dy) || 1;
-        const target = 105;
-        fx += (dx / d) * (d - target) * 0.045;
-        fy += (dy / d) * (d - target) * 0.045;
-      });
-
-      // Gravity toward centre
-      fx += (cx - n.x) * 0.012;
-      fy += (cy - n.y) * 0.012;
-
-      n.vx = (n.vx + fx) * 0.80;
-      n.vy = (n.vy + fy) * 0.80;
-      n.x  += n.vx;
-      n.y  += n.vy;
-    });
-  }
-
-  // ── Connected node IDs for highlight ─────────────────────────────────
-  function connectedIds(n) {
-    if (!n) return null;
-    const ids = new Set([n.id]);
-    netEdges.forEach(e => {
-      if (e.from === n.id) ids.add(e.to);
-      if (e.to   === n.id) ids.add(e.from);
-    });
-    return ids;
-  }
-
-  // ── Draw ──────────────────────────────────────────────────────────────
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const connected = netSelected ? connectedIds(netSelected) : null;
-
-    // Edges
-    netEdges.forEach(e => {
-      const a = getNode(e.from), b = getNode(e.to);
-      if (!a || !b) return;
-      const isLit = !connected || (connected.has(e.from) && connected.has(e.to));
-      ctx.globalAlpha = isLit ? 1 : 0.08;
-
-      if (e.type === 'adjacency') {
-        ctx.save();
-        ctx.setLineDash([5, 4]);
-        ctx.strokeStyle = '#3d2b1f';
-        ctx.lineWidth   = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.restore();
-      } else {
-        ctx.strokeStyle = 'rgba(193,127,74,0.45)';
-        ctx.lineWidth   = 0.9;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-    });
-
-    // Nodes
-    netNodes.forEach(n => {
-      const isLit    = !connected || connected.has(n.id);
-      const isActive = netSelected && netSelected.id === n.id;
-      ctx.globalAlpha = isLit ? 1 : 0.15;
-
-      if (n.type === 'zone') {
-        const col = ZONE_COLS[n.zone] ?? { fill: '#888', stroke: '#555' };
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, isActive ? n.r * 1.15 : n.r, 0, Math.PI * 2);
-        ctx.fillStyle   = col.fill;
-        ctx.fill();
-        ctx.strokeStyle = col.stroke;
-        ctx.lineWidth   = 2;
-        ctx.stroke();
-        ctx.fillStyle      = '#fff';
-        ctx.font           = '500 10px DM Sans, sans-serif';
-        ctx.textAlign      = 'center';
-        ctx.textBaseline   = 'middle';
-        ctx.fillText(n.label, n.x, n.y);
-      } else {
-        const fill   = n.life_cycle === 'Annual' ? '#7aab6e' : '#c17f4a';
-        const stroke = n.life_cycle === 'Annual' ? '#4a7a3e' : '#9a6035';
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, isActive ? n.r * 1.4 : n.r, 0, Math.PI * 2);
-        ctx.fillStyle   = fill;
-        ctx.fill();
-        ctx.strokeStyle = stroke;
-        ctx.lineWidth   = 1.5;
-        ctx.stroke();
-        if (isLit) {
-          ctx.fillStyle    = '#3d2b1f';
-          ctx.font         = '11px DM Sans, sans-serif';
-          ctx.textAlign    = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillText(n.label, n.x, n.y + n.r + 3);
-        }
-      }
-      ctx.globalAlpha = 1;
-    });
-  }
-
-  // ── Tick ──────────────────────────────────────────────────────────────
-  function tick() {
-    simulate();
-    draw();
-    netAnimId = requestAnimationFrame(tick);
-  }
-
-  // ── Node at mouse ─────────────────────────────────────────────────────
-  function nodeAt(mx, my) {
-    return netNodes.find(n => {
-      const dx = n.x - mx, dy = n.y - my;
-      return Math.sqrt(dx * dx + dy * dy) < n.r + 6;
-    });
-  }
-
-  // ── Show popup card ───────────────────────────────────────────────────
-  function showCard(n, mx, my) {
-    const memberEdges = netEdges.filter(e =>
-      (e.from === n.id || e.to === n.id) && e.type === 'membership'
-    );
-    const adjEdges = netEdges.filter(e =>
-      (e.from === n.id || e.to === n.id) && e.type === 'adjacency'
-    );
-    const totalDeg = netEdges.filter(e => e.from === n.id || e.to === n.id).length;
-
-    document.getElementById('net-card-name').textContent  = n.label;
-    document.getElementById('net-card-type').textContent  = n.type === 'zone' ? 'Zone' : 'Plant';
-
-    const rows = n.type === 'zone'
-      ? `<div class="net-card-row"><span class="net-card-key">Plants</span><span class="net-card-val">${memberEdges.length}</span></div>
-         <div class="net-card-row"><span class="net-card-key">Adjacent zones</span><span class="net-card-val">${adjEdges.length}</span></div>`
-      : `<div class="net-card-row"><span class="net-card-key">Zone</span><span class="net-card-val">${n.zone}</span></div>
-         <div class="net-card-row"><span class="net-card-key">Life cycle</span><span class="net-card-val">${n.life_cycle}</span></div>
-         <div class="net-card-row"><span class="net-card-key">Connections</span><span class="net-card-val">${totalDeg}</span></div>`;
-
-    document.getElementById('net-card-rows').innerHTML = rows;
-
-    const card = document.getElementById('net-card');
-    card.style.display = 'block';
-    const cw = canvas.parentElement.clientWidth;
-    const ch = canvas.parentElement.clientHeight;
-    let cx = mx + 16, cy = my - 20;
-    if (cx + 240 > cw - 10) cx = mx - 250;
-    if (cy + 140 > ch - 10) cy = ch - 150;
-    card.style.left = cx + 'px';
-    card.style.top  = cy + 'px';
-
-    document.getElementById('net-sel-box').style.display = 'block';
-    document.getElementById('net-sel-name').textContent  = n.label;
-    document.getElementById('net-sel-meta').textContent  = n.type === 'zone'
-      ? `Zone · ${totalDeg} connections`
-      : `Plant · Degree: ${totalDeg}`;
-  }
-
-  function hideCard() {
-    netSelected = null;
-    document.getElementById('net-card').style.display    = 'none';
-    document.getElementById('net-sel-box').style.display = 'none';
-  }
-
-  // ── Canvas events ─────────────────────────────────────────────────────
-  canvas.addEventListener('click', e => {
-    const rect = canvas.getBoundingClientRect();
-    const mx   = e.clientX - rect.left;
-    const my   = e.clientY - rect.top;
-    const n    = nodeAt(mx, my);
-    if (n) { netSelected = n; showCard(n, mx, my); }
-    else   { hideCard(); }
+  // Deduplicate plants
+  const plantMap = {};
+  filteredPlants.forEach(p => {
+    const key = p.plant;
+    if (!plantMap[key]) plantMap[key] = { zones: [], life_cycle: p.life_cycle, type: p.type };
+    plantMap[key].zones.push(p.zone);
   });
 
-  canvas.addEventListener('mousemove', e => {
-    const rect = canvas.getBoundingClientRect();
-    canvas.style.cursor = nodeAt(e.clientX - rect.left, e.clientY - rect.top) ? 'pointer' : 'default';
-  });
+  // Degree map for sizing zone nodes
+  const zoneDeg = {};
+  filteredZones.forEach(z => zoneDeg[z] = 0);
+  Object.values(plantMap).forEach(p => p.zones.forEach(z => zoneDeg[z]++));
+  const maxDeg = Math.max(...Object.values(zoneDeg), 1);
 
-  document.getElementById('net-card-close').addEventListener('click', hideCard);
+  const elements = [];
 
-  // ── Sidebar filter ────────────────────────────────────────────────────
-  document.querySelectorAll('.net-filter-row').forEach(row => {
-    row.addEventListener('click', () => {
-      document.querySelectorAll('.net-filter-row').forEach(r => r.classList.remove('active'));
-      row.classList.add('active');
-      netFilter  = row.dataset.filter;
-      netSelected = null;
-      hideCard();
-      cancelAnimationFrame(netAnimId);
-      buildGraph();
-      tick();
+  // Zone nodes
+  filteredZones.forEach(z => {
+    const c = NET_ZONE_COLOURS[z] ?? { bg: '#e0e0e0', border: '#888', text: '#333' };
+    const size = 44 + (zoneDeg[z] / maxDeg) * 36;
+    elements.push({
+      data: { id: 'z-' + z, label: z, type: 'zone', zone: z, size, bg: c.bg, border: c.border, textCol: c.text }
     });
   });
 
-  // ── Kick off ──────────────────────────────────────────────────────────
-  resize();
-  window.addEventListener('resize', () => {
-    resize();
-    cancelAnimationFrame(netAnimId);
-    buildGraph();
-    tick();
+  // Zone adjacency edges
+  NET_ZONE_ADJACENCY.forEach(([a, b]) => {
+    if (filteredZones.includes(a) && filteredZones.includes(b)) {
+      elements.push({
+        data: { id: `zadj-${a}-${b}`, source: 'z-' + a, target: 'z-' + b, edgeType: 'adjacency' }
+      });
+    }
   });
-  buildGraph();
-  tick();
+
+  // Plant nodes + membership edges
+  Object.entries(plantMap).forEach(([name, data]) => {
+    const col = PLANT_TYPE_COLOURS[data.type] ?? '#c17f4a';
+    elements.push({
+      data: { id: 'p-' + name, label: name, type: 'plant', plantType: data.type, life_cycle: data.life_cycle, zones: data.zones.join(', '), size: 18, bg: col + '33', border: col, textCol: col }
+    });
+    data.zones.filter(z => filteredZones.includes(z)).forEach(z => {
+      elements.push({
+        data: { id: `mem-${z}-${name}`, source: 'z-' + z, target: 'p-' + name, edgeType: 'membership' }
+      });
+    });
+  });
+
+  netCy = window.cytoscape({
+    container: document.getElementById('net-cy'),
+    elements,
+    style: [
+      {
+        selector: 'node',
+        style: {
+            'width':               'data(size)',
+            'height':              'data(size)',
+            'background-color':    'data(bg)',
+            'border-color':        'data(border)',
+            'border-width':        1.5,
+            'label':               'data(label)',
+            'color':               '#3d2b1f',
+            'font-size':           10,
+            'font-family':         'DM Sans, sans-serif',
+            'font-weight':         500,
+            'text-valign':         'bottom',
+            'text-halign':         'center',
+            'text-margin-y':       5,
+            'text-wrap':           'wrap',
+            'text-max-width':      '80px',
+            'transition-property': 'opacity, border-width, border-color',
+            'transition-duration': '200ms',
+        },
+        },
+        {
+        selector: 'node[type = "zone"]',
+        style: {
+            'font-size':    11,
+            'font-weight':   600,
+            'border-width':  2,
+            'text-valign':   'center',
+            'text-halign':   'center',
+            'text-margin-y': 0,
+            'color':         'data(textCol)',
+            'text-max-width': 'data(size)',
+        },
+      },
+      {
+        selector: 'node.selected-node',
+        style: {
+          'border-width':      3,
+          'outline-color':     'data(border)',
+          'outline-width':     7,
+          'outline-opacity':   0.28,
+        },
+      },
+      {
+        selector: 'node.neighbour-node',
+        style: { 'border-width': 2.5 },
+      },
+      {
+        selector: 'edge',
+        style: {
+          'width':              0.8,
+          'line-color':         '#d0c8b8',
+          'opacity':            0.6,
+          'curve-style':        'bezier',
+          'transition-property': 'opacity, width, line-color',
+          'transition-duration': '200ms',
+        },
+      },
+      {
+        selector: 'edge[edgeType = "adjacency"]',
+        style: {
+          'width':       2,
+          'line-color':  '#3d2b1f',
+          'line-style':  'dashed',
+          'line-dash-pattern': [5, 4],
+          'opacity':     0.5,
+        },
+      },
+      {
+        selector: 'edge.dimmed',
+        style: { opacity: 0.05 },
+      },
+      {
+        selector: 'edge.selected-edge',
+        style: { opacity: 1, width: 2, 'line-color': '#3d2b1f' },
+      },
+    ],
+    layout: {
+      name:             'cose',
+      animate:          true,
+      animationDuration: 800,
+      nodeRepulsion:    () => 55000,
+      idealEdgeLength:  () => 120,
+      edgeElasticity:   () => 80,
+      gravity:          0.25,
+      numIter:          1200,
+      padding:          40,
+      randomize:        false,
+    },
+    userZoomingEnabled: true,
+    userPanningEnabled: true,
+    minZoom: 0.2,
+    maxZoom: 4,
+  });
+
+  setupNetEvents();
+}
+
+// ── Events ────────────────────────────────────────────────────────────────
+function setupNetEvents() {
+  netCy.on('tap', 'node', e => {
+    const node = e.target;
+    netSelectedNode = node;
+    netCy.elements().removeClass('selected-node selected-edge neighbour-node dimmed');
+    node.addClass('selected-node');
+    node.connectedEdges().addClass('selected-edge');
+    node.neighborhood('node').addClass('neighbour-node');
+    netCy.elements().not(node).not(node.connectedEdges()).not(node.neighborhood('node')).not(node.connectedEdges()).addClass('dimmed');
+    showNetCard(node);
+    updateNetSel(node);
+  });
+
+  netCy.on('tap', e => {
+    if (e.target === netCy) {
+      netCy.elements().removeClass('selected-node selected-edge neighbour-node dimmed');
+      hideNetCard();
+      clearNetSel();
+      netSelectedNode = null;
+    }
+  });
+
+  netCy.on('pan zoom resize', () => {
+    if (netSelectedNode) positionNetCard(netSelectedNode);
+  });
+
+  netCy.on('mouseover', 'node', () => { document.body.style.cursor = 'pointer'; });
+  netCy.on('mouseout',  'node', () => { document.body.style.cursor = 'default'; });
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────
+function showNetCard(node) {
+  const d    = node.data();
+  const card = document.getElementById('net-card');
+  document.getElementById('net-card-name').textContent = d.label;
+  document.getElementById('net-card-type').textContent = d.type === 'zone' ? 'Zone' : d.plantType ?? 'Plant';
+
+  if (d.type === 'zone') {
+    const zonePlants = (cache['plants'] ?? []).filter(p => p.zone === d.zone);
+    document.getElementById('net-card-rows').innerHTML = `
+      <div class="net-card-row"><span class="net-card-key">Plants</span><span class="net-card-val">${zonePlants.length}</span></div>
+      <div class="net-card-row"><span class="net-card-key">Connections</span><span class="net-card-val">${node.connectedEdges().length}</span></div>
+    `;
+  } else {
+    document.getElementById('net-card-rows').innerHTML = `
+      <div class="net-card-row"><span class="net-card-key">Zone</span><span class="net-card-val">${d.zones}</span></div>
+      <div class="net-card-row"><span class="net-card-key">Life cycle</span><span class="net-card-val">${d.life_cycle}</span></div>
+      <div class="net-card-row"><span class="net-card-key">Type</span><span class="net-card-val">${d.plantType ?? '—'}</span></div>
+    `;
+  }
+
+  card.style.display = 'block';
+  positionNetCard(node);
+}
+
+function positionNetCard(node) {
+  const card = document.getElementById('net-card');
+  if (card.style.display === 'none') return;
+  const wrap = document.getElementById('net-cy');
+  const pos  = node.renderedPosition();
+  const wR   = wrap.getBoundingClientRect();
+  const cW   = card.offsetWidth  || 230;
+  const cH   = card.offsetHeight || 130;
+  const m    = 16;
+  let left = pos.x + m;
+  let top  = pos.y + m;
+  if (left + cW + m > wR.width)  left = pos.x - cW - m;
+  if (top  + cH + m > wR.height) top  = pos.y - cH - m;
+  card.style.left = Math.max(m, left) + 'px';
+  card.style.top  = Math.max(m, top)  + 'px';
+}
+
+function hideNetCard() {
+  document.getElementById('net-card').style.display = 'none';
+}
+
+// ── Sel box ───────────────────────────────────────────────────────────────
+function updateNetSel(node) {
+  const d = node.data();
+  document.getElementById('net-sel-box').style.display = 'block';
+  document.getElementById('net-sel-name').textContent  = d.label;
+  document.getElementById('net-sel-meta').textContent  = d.type === 'zone'
+    ? `Zone · ${node.connectedEdges().length} connections`
+    : `${d.plantType ?? 'Plant'} · Degree: ${node.connectedEdges().length}`;
+}
+
+function clearNetSel() {
+  document.getElementById('net-sel-box').style.display = 'none';
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────
+function buildNetSidebar(plants) {
+  const zones = ['all', ...Object.keys(NET_ZONE_COLOURS)];
+  const container = document.getElementById('net-zone-filters');
+  container.innerHTML = '';
+
+  zones.forEach(z => {
+    const btn = document.createElement('div');
+    btn.className = 'net-filter-row' + (z === 'all' ? ' active' : '');
+    btn.dataset.zone = z;
+    const col = z === 'all' ? '#3d2b1f' : (NET_ZONE_COLOURS[z]?.border ?? '#888');
+    btn.innerHTML = `<div class="net-dot" style="background:${col}"></div>${z === 'all' ? 'All zones' : z}`;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.net-filter-row[data-zone]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      netActiveZone = z;
+      netSelectedNode = null;
+      hideNetCard();
+      clearNetSel();
+      buildNetworkGraph(plants, z === 'all' ? 'all' : z);
+    });
+    container.appendChild(btn);
+  });
+}
+
+function buildNetLegend() {
+  const container = document.getElementById('net-legend');
+  container.innerHTML = '';
+
+  const adjacencyItem = document.createElement('div');
+  adjacencyItem.className = 'net-legend-item';
+  adjacencyItem.innerHTML = `<div class="net-legend-line net-legend-adjacency"></div>Zone adjacency`;
+  container.appendChild(adjacencyItem);
+
+  const memberItem = document.createElement('div');
+  memberItem.className = 'net-legend-item';
+  memberItem.innerHTML = `<div class="net-legend-line net-legend-membership"></div>Plant membership`;
+  container.appendChild(memberItem);
+
+  Object.entries(PLANT_TYPE_COLOURS).forEach(([type, col]) => {
+    const item = document.createElement('div');
+    item.className = 'net-legend-item';
+    item.innerHTML = `<div class="net-dot" style="background:${col};border:1.5px solid ${col}"></div>${type}`;
+    container.appendChild(item);
+  });
+}
+
+// ── Reset ─────────────────────────────────────────────────────────────────
+function resetNetwork() {
+  if (!netCy) return;
+  netCy.elements().removeClass('selected-node selected-edge neighbour-node dimmed');
+  netSelectedNode = null;
+  hideNetCard();
+  clearNetSel();
+  netCy.animate({ fit: { padding: 40 }, duration: 400, easing: 'ease-in-out' });
 }

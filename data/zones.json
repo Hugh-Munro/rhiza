@@ -237,8 +237,10 @@
   },
   "front-garden": {
     "name": "Front Garden",
+    "light": "Partial shade",
+    "soil": "Loam",
     "coordinates": [
-      [
+      [ 
         52.21398927388505,
         -7.042612587689306
       ],
@@ -298,6 +300,8 @@
   },
   "side-garden": {
     "name": "Side Garden",
+    "light": "Full sun",
+    "soil": "Sandy / free draining",
     "coordinates": [
       [
         52.213709834832905,
@@ -331,6 +335,8 @@
   },
   "back-field": {
     "name": "Back Field",
+    "light": "Full sun",
+    "soil": "Clay loam",
     "coordinates": [
       [
         52.214337151104246,
@@ -356,6 +362,8 @@
   },
   "upper-back-garden": {
     "name": "Upper Back Garden",
+    "light": "Full sun",
+    "soil": "Loam",
     "coordinates": [
       [
         52.21419250165306,
@@ -389,6 +397,8 @@
   },
   "lower-back-garden": {
     "name": "Lower Back Garden",
+    "light": "Full sun",
+    "soil": "Clay loam",
     "coordinates": [
       [
         52.213968894048094,
@@ -466,6 +476,8 @@
   },
   "house": {
     "name": "House",
+    "light": "Indirect / artificial",
+    "soil": "Potted compost",
     "coordinates": [
       [
         52.213743766081095,

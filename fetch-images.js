@@ -28,7 +28,17 @@ const plants = [
   "Tomato",
   "Yellow Rose", "Pink Rose", "Red Rose", "Cherry Blossom",
   "Hydrangea", "Strawberry", "Lavender", "Crocosmia", "Geranium",
-  "Acer", "Willow Tree"
+  "Acer", "Willow Tree",
+  "Rhododendron",
+  "Euonymus",
+  "Hornbeam",
+  "Phormium",
+  "Fuchsia",
+  "Osmanthus",
+  "Sedum",
+  "Photinia",
+  "Camellia",
+  "Red Maple"
 ];
 
 (async () => {

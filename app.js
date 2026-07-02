@@ -17,6 +17,23 @@ const ZONE_COLOURS = {
   'Back Field':        { bg: '#f0e8c0', color: '#6a5a10' },
   'House':             { bg: '#f0e0d0', color: '#7a5030' },
 };
+
+const PLANT_TYPE_COLOURS = {
+  'Tree':       '#5a8a3a',
+  'Shrub':      '#7aaa5a',
+  'Climber':    '#a0b84a',
+  'Fern':       '#4a7a5a',
+  'Perennial':  '#c17f4a',
+  'Wildflower': '#d4a843',
+  'Bulb':       '#9a7ab8',
+  'Grass':      '#b8c85a',
+  'Fruit':      '#c85a3a',
+  'Herb':       '#7ab88a',
+  'Biennial':   '#b8956a',
+  'Vegetable':  '#c8603a',
+  'Succulent':  '#6ab8a0',
+};
+
 function zonePill(zone) {
   if (!zone) return '';
   const style = ZONE_COLOURS[zone]
@@ -185,10 +202,15 @@ function renderGrid(rows) {
     const name    = r[cfg.nameCol] || '';
     const zone    = r['zone'] || '';
     const life    = r['life_cycle'] || '';
+    const type    = r['type'] || '';
     const imgUrl  = photoCache[name];
     const cardImg = imgUrl
       ? `<img src="${imgUrl}" alt="${name}" />`
       : PLANT_ICON;
+
+    const baseCol = PLANT_TYPE_COLOURS[type] ?? '#c17f4a';
+    const typeBg  = baseCol + '33';
+
     return `
       <div class="card">
         <div class="card-inner">
@@ -206,10 +228,12 @@ function renderGrid(rows) {
             <div class="card-back-divider"></div>
             ${zone ? `<div class="card-back-label">Zone</div><div class="card-back-value">${zone}</div>` : ''}
             ${life ? `<div class="card-back-label">Life Cycle</div><span class="card-back-pill">${life}</span>` : ''}
+            ${type ? `<div class="card-back-label">Type</div><span class="card-back-pill" style="background:${typeBg};color:${baseCol}">${type}</span>` : ''}
           </div>
         </div>
       </div>`;
   }).join('');
+
   grid.querySelectorAll('.card').forEach(card => {
     card.querySelector('.card-front').addEventListener('click', () => card.classList.add('flipped'));
     card.querySelector('.card-back').addEventListener('click',  () => card.classList.remove('flipped'));

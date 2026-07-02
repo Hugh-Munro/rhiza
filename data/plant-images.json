@@ -37,5 +37,14 @@
   "Crocosmia": "https://inaturalist-open-data.s3.amazonaws.com/photos/43084170/medium.jpg",
   "Geranium": "https://inaturalist-open-data.s3.amazonaws.com/photos/70283238/medium.jpg",
   "Acer": "https://inaturalist-open-data.s3.amazonaws.com/photos/27342760/medium.jpeg",
-  "Willow Tree": "https://inaturalist-open-data.s3.amazonaws.com/photos/59393301/medium.jpeg"
+  "Willow Tree": "https://inaturalist-open-data.s3.amazonaws.com/photos/59393301/medium.jpeg",
+  "Rhododendron": "https://static.inaturalist.org/photos/132769155/medium.jpg",
+  "Euonymus": "https://static.inaturalist.org/photos/6358583/medium.jpg",
+  "Phormium": "https://inaturalist-open-data.s3.amazonaws.com/photos/450688894/medium.jpeg",
+  "Fuchsia": "https://inaturalist-open-data.s3.amazonaws.com/photos/45778546/medium.jpg",
+  "Osmanthus": "https://inaturalist-open-data.s3.amazonaws.com/photos/1472053/medium.jpg",
+  "Sedum": "https://inaturalist-open-data.s3.amazonaws.com/photos/137304118/medium.jpeg",
+  "Photinia": "https://inaturalist-open-data.s3.amazonaws.com/photos/342304993/medium.jpg",
+  "Camellia": "https://inaturalist-open-data.s3.amazonaws.com/photos/259793413/medium.jpg",
+  "Red Maple": "https://inaturalist-open-data.s3.amazonaws.com/photos/371065093/medium.jpg"
 }

@@ -1,47 +1,63 @@
-﻿plant,zone,life_cycle
-Ivy,Woods,Perennial
-Fern,Woods,Perennial
-Horse Chestnut,Woods,Perennial
-Hosta,Woods,Perennial
-Primrose,Woods,Perennial
-Hellebore,Woods,Perennial
-Aquilegia,Woods,Perennial
-Hart's Tongue Fern,Woods,Perennial
-Silver Birch,Woods,Perennial
-Navelwort,Woods,Perennial
-Privet,Woods,Perennial
-Bluebell,Woods,Perennial
-Daffodil,Woods,Perennial
-Snowdrop,Woods,Perennial
-Sycamore,Woods,Perennial
-Raspberry,Field,Perennial
-Hornbeam,Field,Perennial
-Perennial Ryegrass,Field,Perennial
-Aquilegia,Gravel,Perennial
-Hollyhock,Gravel,Perennial
-Garden Rocket,Gravel,Perennial
-Sycamore,Orchard,Perennial
-Apple,Orchard,Perennial
-Hawthorn,Orchard,Perennial
-Foxglove,Orchard,Perennial
-Fern,Orchard,Perennial
-Grape,Orchard,Perennial
-Cherry Laurel,Orchard,Perennial
-Buddleja,Orchard,Perennial
-Tomato,Orchard,Annual
-Ivy,Side Garden,Perennial
-Yellow Rose,Side Garden,Perennial
-Pink Rose,Side Garden,Perennial
-Red Rose,Side Garden,Perennial
-Cherry Blossom,Side Garden,Perennial
-Hydrangea,Side Garden,Perennial
-Strawberry,Side Garden,Perennial
-Hosta,Side Garden,Perennial
-Lavender,Side Garden,Perennial
-Crocosmia,Side Garden,Perennial
-Geranium,Side Garden,Perennial
-Acer,Lower Back Garden,Perennial
-Acer,Front Garden,Perennial
-Acer,Upper Back Garden,Perennial
-Willow Tree,Back Field,Perennial
-Geranium,House,Perennial
+﻿plant,zone,life_cycle,type
+Ivy,Woods,Perennial,Climber
+Fern,Woods,Perennial,Fern
+Horse Chestnut,Woods,Perennial,Tree
+Hosta,Woods,Perennial,Perennial
+Primrose,Woods,Perennial,Wildflower
+Hellebore,Woods,Perennial,Perennial
+Aquilegia,Woods,Perennial,Perennial
+Hart's Tongue Fern,Woods,Perennial,Fern
+Silver Birch,Woods,Perennial,Tree
+Navelwort,Woods,Perennial,Wildflower
+Privet,Woods,Perennial,Shrub
+Bluebell,Woods,Perennial,Bulb
+Daffodil,Woods,Perennial,Bulb
+Snowdrop,Woods,Perennial,Bulb
+Sycamore,Woods,Perennial,Tree
+Raspberry,Field,Perennial,Fruit
+Hornbeam,Field,Perennial,Tree
+Perennial Ryegrass,Field,Perennial,Grass
+Aquilegia,Gravel,Perennial,Perennial
+Hollyhock,Gravel,Biennial,Biennial
+Garden Rocket,Gravel,Perennial,Herb
+Sycamore,Orchard,Perennial,Tree
+Apple,Orchard,Perennial,Tree
+Hawthorn,Orchard,Perennial,Tree
+Foxglove,Orchard,Biennial,Biennial
+Fern,Orchard,Perennial,Fern
+Grape,Orchard,Perennial,Climber
+Cherry Laurel,Orchard,Perennial,Shrub
+Buddleja,Orchard,Perennial,Shrub
+Tomato,Orchard,Annual,Vegetable
+Ivy,Side Garden,Perennial,Climber
+Yellow Rose,Side Garden,Perennial,Shrub
+Pink Rose,Side Garden,Perennial,Shrub
+Red Rose,Side Garden,Perennial,Shrub
+Cherry Blossom,Side Garden,Perennial,Tree
+Hydrangea,Side Garden,Perennial,Shrub
+Strawberry,Side Garden,Perennial,Fruit
+Hosta,Side Garden,Perennial,Perennial
+Lavender,Side Garden,Perennial,Shrub
+Crocosmia,Side Garden,Perennial,Bulb
+Geranium,Side Garden,Perennial,Perennial
+Acer,Lower Back Garden,Perennial,Tree
+Acer,Front Garden,Perennial,Tree
+Acer,Upper Back Garden,Perennial,Tree
+Willow Tree,Back Field,Perennial,Tree
+Geranium,House,Perennial,Perennial
+Rhododendron,Front Garden,Perennial,Shrub
+Euonymus,Front Garden,Perennial,Shrub
+Hornbeam,Front Garden,Perennial,Tree
+Sycamore,Front Garden,Perennial,Tree
+Geranium,Front Garden,Perennial,Perennial
+Phormium,Front Garden,Perennial,Grass
+Fuchsia,Front Garden,Perennial,Shrub
+Buddleja,Front Garden,Perennial,Shrub
+Osmanthus,Front Garden,Perennial,Shrub
+Sedum,Front Garden,Perennial,Succulent
+Sedum,Side Garden,Perennial,Succulent
+Photinia,Front Garden,Perennial,Shrub
+Camellia,Front Garden,Perennial,Shrub
+Fern,Front Garden,Perennial,Fern
+Silver Birch,Front Garden,Perennial,Tree
+Red Maple,Front Garden,Perennial,Tree
