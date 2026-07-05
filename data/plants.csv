@@ -1,63 +1,111 @@
-﻿plant,zone,life_cycle,type
-Ivy,Woods,Perennial,Climber
-Fern,Woods,Perennial,Fern
-Horse Chestnut,Woods,Perennial,Tree
-Hosta,Woods,Perennial,Perennial
-Primrose,Woods,Perennial,Wildflower
-Hellebore,Woods,Perennial,Perennial
-Aquilegia,Woods,Perennial,Perennial
-Hart's Tongue Fern,Woods,Perennial,Fern
-Silver Birch,Woods,Perennial,Tree
-Navelwort,Woods,Perennial,Wildflower
-Privet,Woods,Perennial,Shrub
-Bluebell,Woods,Perennial,Bulb
-Daffodil,Woods,Perennial,Bulb
-Snowdrop,Woods,Perennial,Bulb
-Sycamore,Woods,Perennial,Tree
-Raspberry,Field,Perennial,Fruit
-Hornbeam,Field,Perennial,Tree
-Perennial Ryegrass,Field,Perennial,Grass
-Aquilegia,Gravel,Perennial,Perennial
-Hollyhock,Gravel,Biennial,Biennial
-Garden Rocket,Gravel,Perennial,Herb
-Sycamore,Orchard,Perennial,Tree
-Apple,Orchard,Perennial,Tree
-Hawthorn,Orchard,Perennial,Tree
-Foxglove,Orchard,Biennial,Biennial
-Fern,Orchard,Perennial,Fern
-Grape,Orchard,Perennial,Climber
-Cherry Laurel,Orchard,Perennial,Shrub
-Buddleja,Orchard,Perennial,Shrub
-Tomato,Orchard,Annual,Vegetable
-Ivy,Side Garden,Perennial,Climber
-Yellow Rose,Side Garden,Perennial,Shrub
-Pink Rose,Side Garden,Perennial,Shrub
-Red Rose,Side Garden,Perennial,Shrub
-Cherry Blossom,Side Garden,Perennial,Tree
-Hydrangea,Side Garden,Perennial,Shrub
-Strawberry,Side Garden,Perennial,Fruit
-Hosta,Side Garden,Perennial,Perennial
-Lavender,Side Garden,Perennial,Shrub
-Crocosmia,Side Garden,Perennial,Bulb
-Geranium,Side Garden,Perennial,Perennial
-Acer,Lower Back Garden,Perennial,Tree
-Acer,Front Garden,Perennial,Tree
-Acer,Upper Back Garden,Perennial,Tree
-Willow Tree,Back Field,Perennial,Tree
-Geranium,House,Perennial,Perennial
-Rhododendron,Front Garden,Perennial,Shrub
-Euonymus,Front Garden,Perennial,Shrub
-Hornbeam,Front Garden,Perennial,Tree
-Sycamore,Front Garden,Perennial,Tree
-Geranium,Front Garden,Perennial,Perennial
-Phormium,Front Garden,Perennial,Grass
-Fuchsia,Front Garden,Perennial,Shrub
-Buddleja,Front Garden,Perennial,Shrub
-Osmanthus,Front Garden,Perennial,Shrub
-Sedum,Front Garden,Perennial,Succulent
-Sedum,Side Garden,Perennial,Succulent
-Photinia,Front Garden,Perennial,Shrub
-Camellia,Front Garden,Perennial,Shrub
-Fern,Front Garden,Perennial,Fern
-Silver Birch,Front Garden,Perennial,Tree
-Red Maple,Front Garden,Perennial,Tree
+﻿plant,zone,life_cycle,type,lighting
+Ivy,Woods,Perennial,Climber,Full Shade
+Fern,Woods,Perennial,Fern,Full Shade
+Horse Chestnut,Woods,Perennial,Tree,Full Sun
+Hosta,Woods,Perennial,Perennial,Full Shade
+Primrose,Woods,Perennial,Wildflower,Partial Shade
+Hellebore,Woods,Perennial,Perennial,Partial Shade
+Aquilegia,Woods,Perennial,Perennial,Partial Shade
+Hart's Tongue Fern,Woods,Perennial,Fern,Full Shade
+Silver Birch,Woods,Perennial,Tree,Full Sun
+Navelwort,Woods,Perennial,Wildflower,Partial Shade
+Privet,Woods,Perennial,Shrub,Full Sun
+Bluebell,Woods,Perennial,Bulb,Full Shade
+Daffodil,Woods,Perennial,Bulb,Full Sun
+Snowdrop,Woods,Perennial,Bulb,Partial Shade
+Sycamore,Woods,Perennial,Tree,Full Sun
+Raspberry,Field,Perennial,Fruit,Full Sun
+Hornbeam,Field,Perennial,Tree,Full Sun
+Perennial Ryegrass,Field,Perennial,Grass,Full Sun
+Aquilegia,Gravel,Perennial,Perennial,Partial Shade
+Hollyhock,Gravel,Biennial,Biennial,Full Sun
+Garden Rocket,Gravel,Perennial,Herb,Full Sun
+Sycamore,Orchard,Perennial,Tree,Full Sun
+Apple,Orchard,Perennial,Tree,Full Sun
+Hawthorn,Orchard,Perennial,Tree,Full Sun
+Foxglove,Orchard,Biennial,Biennial,Partial Shade
+Fern,Orchard,Perennial,Fern,Full Shade
+Grape,Orchard,Perennial,Climber,Full Sun
+Cherry Laurel,Orchard,Perennial,Shrub,Partial Shade
+Buddleja,Orchard,Perennial,Shrub,Full Sun
+Tomato,Orchard,Annual,Vegetable,Full Sun
+Ivy,Side Garden,Perennial,Climber,Full Shade
+Yellow Rose,Side Garden,Perennial,Shrub,Full Sun
+Pink Rose,Side Garden,Perennial,Shrub,Full Sun
+Red Rose,Side Garden,Perennial,Shrub,Full Sun
+Cherry Blossom,Side Garden,Perennial,Tree,Full Sun
+Hydrangea,Side Garden,Perennial,Shrub,Partial Shade
+Strawberry,Side Garden,Perennial,Fruit,Full Sun
+Hosta,Side Garden,Perennial,Perennial,Full Shade
+Lavender,Side Garden,Perennial,Shrub,Full Sun
+Crocosmia,Side Garden,Perennial,Bulb,Full Sun
+Geranium,Side Garden,Perennial,Perennial,Partial Shade
+Acer,Lower Back Garden,Perennial,Tree,Partial Shade
+Acer,Front Garden,Perennial,Tree,Partial Shade
+Acer,Upper Back Garden,Perennial,Tree,Partial Shade
+Willow Tree,Back Field,Perennial,Tree,Full Sun
+Geranium,House,Perennial,Perennial,Indirect
+Rhododendron,Front Garden,Perennial,Shrub,Partial Shade
+Euonymus,Front Garden,Perennial,Shrub,Partial Shade
+Hornbeam,Front Garden,Perennial,Tree,Full Sun
+Sycamore,Front Garden,Perennial,Tree,Full Sun
+Geranium,Front Garden,Perennial,Perennial,Partial Shade
+Phormium,Front Garden,Perennial,Grass,Full Sun
+Fuchsia,Front Garden,Perennial,Shrub,Partial Shade
+Buddleja,Front Garden,Perennial,Shrub,Full Sun
+Osmanthus,Front Garden,Perennial,Shrub,Partial Shade
+Sedum,Front Garden,Perennial,Succulent,Full Sun
+Sedum,Side Garden,Perennial,Succulent,Full Sun
+Photinia,Front Garden,Perennial,Shrub,Full Sun
+Camellia,Front Garden,Perennial,Shrub,Partial Shade
+Fern,Front Garden,Perennial,Fern,Full Shade
+Silver Birch,Front Garden,Perennial,Tree,Full Sun
+Red Maple,Front Garden,Perennial,Tree,Full Sun
+Chive,Lower Back Garden,Perennial,Herb,Full Sun
+Strawberry,Lower Back Garden,Perennial,Fruit,Full Sun
+Fern,Lower Back Garden,Perennial,Fern,Full Shade
+Hosta,Lower Back Garden,Perennial,Perennial,Full Shade
+Oregano,Lower Back Garden,Perennial,Herb,Full Sun
+Shrubby Cinquefoil,Lower Back Garden,Perennial,Shrub,Full Sun
+Geranium,Lower Back Garden,Perennial,Perennial,Partial Shade
+Hosta Undulata,Lower Back Garden,Perennial,Perennial,Full Shade
+Foxglove,Lower Back Garden,Biennial,Biennial,Partial Shade
+Gladioli,Lower Back Garden,Perennial,Bulb,Full Sun
+Primrose,Lower Back Garden,Perennial,Wildflower,Partial Shade
+Pink Rose,Lower Back Garden,Perennial,Shrub,Full Sun
+Shasta Daisy,Lower Back Garden,Perennial,Perennial,Full Sun
+Hemerocallis,Lower Back Garden,Perennial,Perennial,Full Sun
+Heather,Lower Back Garden,Perennial,Shrub,Full Sun
+Aquilegia,Lower Back Garden,Perennial,Perennial,Partial Shade
+Common Box,Lower Back Garden,Perennial,Shrub,Partial Shade
+Cornflower,Lower Back Garden,Perennial,Wildflower,Full Sun
+Hart's Tongue Fern,Lower Back Garden,Perennial,Fern,Full Shade
+Escallonia,Lower Back Garden,Perennial,Shrub,Full Sun
+Euonymus,Lower Back Garden,Perennial,Shrub,Partial Shade
+Euphorbia Mellifera,Lower Back Garden,Perennial,Shrub,Full Sun
+Rosemary,Lower Back Garden,Perennial,Herb,Full Sun
+Sedum,Lower Back Garden,Perennial,Succulent,Full Sun
+Butterfly Bush,Lower Back Garden,Perennial,Shrub,Full Sun
+Hydrangea,Lower Back Garden,Perennial,Shrub,Partial Shade
+Horse Chestnut,Upper Back Garden,Perennial,Tree,Full Sun
+Hornbeam,Upper Back Garden,Perennial,Tree,Full Sun
+Cherry Blossom,Upper Back Garden,Perennial,Tree,Full Sun
+Acer,Upper Back Garden,Perennial,Tree,Partial Shade
+Primrose,Upper Back Garden,Perennial,Wildflower,Partial Shade
+Foxglove,Upper Back Garden,Biennial,Biennial,Partial Shade
+Hawthorn,Upper Back Garden,Perennial,Tree,Full Sun
+Elephant Garlic,Upper Back Garden,Perennial,Vegetable,Full Sun
+Rhubarb,Upper Back Garden,Perennial,Vegetable,Full Sun
+Phlomis,Lower Back Garden,Perennial,Shrub,Full Sun
+Oak Tree,Back Field,Perennial,Tree,Full Sun
+Hornbeam,Back Field,Perennial,Tree,Full Sun
+Sycamore,Back Field,Perennial,Tree,Full Sun
+Fir Tree,Upper Back Garden,Perennial,Tree,Full Sun
+Fir Tree,Front Garden,Perennial,Tree,Full Sun
+Asparagus Fern,Lower Back Garden,Perennial,Fern,Partial Shade
+Oak Tree,Upper Back Garden,Perennial,Tree,Full Sun
+Elm Tree,Upper Back Garden,Perennial,Tree,Full Sun
+Lady's Mantles,Lower Back Garden,Perennial,Perennial,Partial Shade
+Bergenia,Lower Back Garden,Perennial,Perennial,Partial Shade
+Rhododendron,Lower Back Garden,Perennial,Shrub,Partial Shade
+Aucuba Japonica,Lower Back Garden,Perennial,Shrub,Full Shade

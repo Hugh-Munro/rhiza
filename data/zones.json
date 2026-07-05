@@ -1,7 +1,7 @@
 {
   "woods": {
     "name": "Woods",
-    "light": "Low",
+    "light": "Full Shade",
     "soil": "Clay loam",
     "coordinates": [
       [
@@ -44,7 +44,7 @@
   },
   "field": {
     "name": "Field",
-    "light": "Full sun",
+    "light": "Full Sun",
     "soil": "Sandy loam",
     "coordinates": [
       [
@@ -71,7 +71,7 @@
   },
   "orchard": {
     "name": "Orchard",
-    "light": "Partial",
+    "light": "Partial Shade",
     "soil": "Loam",
     "coordinates": [
       [
@@ -98,7 +98,7 @@
   },
   "gravel": {
     "name": "Gravel",
-    "light": "Full sun",
+    "light": "Full Sun",
     "soil": "Gravel / free draining",
     "coordinates": [
       [
@@ -237,7 +237,7 @@
   },
   "front-garden": {
     "name": "Front Garden",
-    "light": "Partial shade",
+    "light": "Partial Shade",
     "soil": "Loam",
     "coordinates": [
       [ 
@@ -300,7 +300,7 @@
   },
   "side-garden": {
     "name": "Side Garden",
-    "light": "Full sun",
+    "light": "Full Sun",
     "soil": "Sandy / free draining",
     "coordinates": [
       [
@@ -335,7 +335,7 @@
   },
   "back-field": {
     "name": "Back Field",
-    "light": "Full sun",
+    "light": "Full Sun",
     "soil": "Clay loam",
     "coordinates": [
       [
@@ -362,7 +362,7 @@
   },
   "upper-back-garden": {
     "name": "Upper Back Garden",
-    "light": "Full sun",
+    "light": "Full Sun",
     "soil": "Loam",
     "coordinates": [
       [
@@ -397,7 +397,7 @@
   },
   "lower-back-garden": {
     "name": "Lower Back Garden",
-    "light": "Full sun",
+    "light": "Full Sun",
     "soil": "Clay loam",
     "coordinates": [
       [
@@ -476,7 +476,7 @@
   },
   "house": {
     "name": "House",
-    "light": "Indirect / artificial",
+    "light": "Indirect",
     "soil": "Potted compost",
     "coordinates": [
       [

@@ -23,7 +23,6 @@ const MAP_ZONE_NAMES = {
   'back-field':        'Back Field',
   'house':             'House',
 };
-
 // World-space projection tuning (lat/lng → local planar units)
 const PROJECTION_SPAN  = 800;  // total span the garden's longer axis maps to
 const PROJECTION_INSET = 60;   // inset from that span, so zones don't touch the raw edge
@@ -32,34 +31,28 @@ const BG_TEXTURE_RES   = 1.5;  // px per world unit for the cached background te
 const MAX_ZOOM             = 8;
 const ZOOM_STEP             = 1.06;
 const CLICK_DRAG_THRESHOLD  = 4; // px of movement that turns a tap/click into a drag
-
 // ── Map module ────────────────────────────────────────────────────────────
 const GardenMap = (() => {
   let canvas, ctx;
   let dpr = 1, cssWidth = 0, cssHeight = 0;
-
   let zonesData   = {};
   let plantsData  = [];
   let dataLoaded  = false;
-
   let projectedZones = {};
-  let contentBounds  = null; // garden bounding box + CONTENT_MARGIN, in world units
+  let gardenBounds   = null; // immutable garden bounding box + CONTENT_MARGIN, in world units
+  let contentBounds  = null; // gardenBounds padded to the CURRENT canvas aspect ratio
+  let bakedAspect    = null; // canvas aspect the background texture was last baked at
   let bgCanvas        = null;
-
   let minZoom = 0.1, zoom = 1, panX = 0, panY = 0;
   let firstFit = true;
-
   let selectedZone = null;
   let hoveredZone  = null;
-
   let isPanning = false;
   let dragged   = false;
   let pointerStart = { x: 0, y: 0 };
   let panOrigin    = { x: 0, y: 0 };
   let pinch = null;
-
   let resizeObserver = null;
-
   // ── Data loading ──────────────────────────────────────────────────────
   async function loadZoneData() {
     try {
@@ -70,14 +63,12 @@ const GardenMap = (() => {
       zonesData = {};
     }
   }
-
   // ── Lat/lng → world-unit projection ─────────────────────────────────────
   function projectZones() {
     const allCoords = Object.values(zonesData)
       .filter(z => z.coordinates?.length)
       .flatMap(z => z.coordinates);
-    if (!allCoords.length) { projectedZones = {}; contentBounds = null; return; }
-
+    if (!allCoords.length) { projectedZones = {}; gardenBounds = null; return; }
     const lats = allCoords.map(c => c[0]);
     const lngs = allCoords.map(c => c[1]);
     const minLat = Math.min(...lats), maxLat = Math.max(...lats);
@@ -90,41 +81,67 @@ const GardenMap = (() => {
       (PROJECTION_SPAN - PROJECTION_INSET * 2) / lngSpan,
       (PROJECTION_SPAN - PROJECTION_INSET * 2) / latSpan
     );
-
     const project = ([lat, lng]) => [
        (lng - minLng) * cosLat * scale - (lngSpan * scale) / 2,
       -((lat - minLat) * scale - (latSpan * scale) / 2),
     ];
-
     projectedZones = {};
     for (const [slug, zone] of Object.entries(zonesData)) {
       if (zone.coordinates?.length >= 3) {
         projectedZones[slug] = zone.coordinates.map(project);
       }
     }
-
     const pts = Object.values(projectedZones).flat();
     const gMinX = Math.min(...pts.map(p => p[0]));
     const gMaxX = Math.max(...pts.map(p => p[0]));
     const gMinY = Math.min(...pts.map(p => p[1]));
     const gMaxY = Math.max(...pts.map(p => p[1]));
-
-    contentBounds = {
+    // Immutable garden box. Never mutated after this point; the aspect-padded
+    // contentBounds is derived from it fresh, per canvas size, in updateContentBounds().
+    gardenBounds = {
       minX: gMinX - CONTENT_MARGIN,
       maxX: gMaxX + CONTENT_MARGIN,
       minY: gMinY - CONTENT_MARGIN,
       maxY: gMaxY + CONTENT_MARGIN,
     };
   }
-
-  // ── Background texture (generated once, cached) ─────────────────────────
+  // ── Derive padded bounds + (re)build texture for the current canvas ──────
+  // contentBounds and the grass texture are always rebuilt to match the live
+  // canvas aspect, so a fitted view can never fall past the edge of the texture.
+  function updateContentBounds() {
+    if (!gardenBounds || !cssWidth || !cssHeight) return;
+    let width  = gardenBounds.maxX - gardenBounds.minX;
+    let height = gardenBounds.maxY - gardenBounds.minY;
+    let minX = gardenBounds.minX, maxX = gardenBounds.maxX;
+    let minY = gardenBounds.minY, maxY = gardenBounds.maxY;
+    const canvasAspect  = cssWidth / cssHeight;
+    const contentAspect = width / height;
+    // Pad out whichever axis is "too narrow" for the canvas shape, so a
+    // fitted view (which matches the canvas's aspect ratio) never has to
+    // show anything past the edge of this region.
+    if (contentAspect < canvasAspect) {
+      const targetWidth = height * canvasAspect;
+      const extra = (targetWidth - width) / 2;
+      minX -= extra; maxX += extra; width = targetWidth;
+    } else {
+      const targetHeight = width / canvasAspect;
+      const extra = (targetHeight - height) / 2;
+      minY -= extra; maxY += extra; height = targetHeight;
+    }
+    contentBounds = { minX, maxX, minY, maxY };
+    // Only re-paint the (expensive) texture when the aspect actually changed.
+    if (bakedAspect === null || Math.abs(bakedAspect - canvasAspect) > 0.001) {
+      buildBackgroundCache(width, height);
+      bakedAspect = canvasAspect;
+    }
+  }
+  // ── Background texture (generated, cached, rebuilt only on aspect change) ─
   function paintGrassTexture(bctx, left, top, width, height) {
     let seed = 17;
     const rand = () => {
       seed = (seed * 16807) % 2147483647;
       return (seed - 1) / 2147483646;
     };
-
     const baseGrad = bctx.createLinearGradient(left, top, left + width, top + height);
     baseGrad.addColorStop(0,   '#cce89a');
     baseGrad.addColorStop(0.3, '#d4e8a8');
@@ -132,7 +149,6 @@ const GardenMap = (() => {
     baseGrad.addColorStop(1,   '#d8eca4');
     bctx.fillStyle = baseGrad;
     bctx.fillRect(left, top, width, height);
-
     // Large dark green watercolour patches
     for (let p = 0; p < 60; p++) {
       const px    = left + rand() * width;
@@ -154,7 +170,6 @@ const GardenMap = (() => {
       bctx.fill();
       bctx.restore();
     }
-
     // Medium patches — lighter variation
     for (let p = 0; p < 40; p++) {
       const px    = left + rand() * width;
@@ -174,7 +189,6 @@ const GardenMap = (() => {
       bctx.fill();
       bctx.restore();
     }
-
     // Fine grass blade strokes
     for (let i = 0; i < 2000; i++) {
       const x     = left + rand() * width;
@@ -193,7 +207,6 @@ const GardenMap = (() => {
       bctx.quadraticCurveTo(x + lean * 0.5, y - len * 0.5, x + lean, y - len);
       bctx.stroke();
     }
-
     // Dense stipple dots
     for (let i = 0; i < 1500; i++) {
       const x     = left + rand() * width;
@@ -207,32 +220,10 @@ const GardenMap = (() => {
       bctx.fill();
     }
   }
-
-  function buildBackgroundCache() {
-    if (!contentBounds || !cssWidth || !cssHeight) return;
-
-    let width  = contentBounds.maxX - contentBounds.minX;
-    let height = contentBounds.maxY - contentBounds.minY;
-    const canvasAspect  = cssWidth / cssHeight;
-    const contentAspect = width / height;
-
-    // Pad out whichever axis is "too narrow" for the canvas shape, so a
-    // fitted view (which matches the canvas's aspect ratio) never has to
-    // show anything past the edge of this texture.
-    if (contentAspect < canvasAspect) {
-      const targetWidth = height * canvasAspect;
-      const extra = (targetWidth - width) / 2;
-      contentBounds.minX -= extra;
-      contentBounds.maxX += extra;
-      width = targetWidth;
-    } else {
-      const targetHeight = width / canvasAspect;
-      const extra = (targetHeight - height) / 2;
-      contentBounds.minY -= extra;
-      contentBounds.maxY += extra;
-      height = targetHeight;
-    }
-
+  // Bake the texture to exactly the current contentBounds. Does not mutate
+  // contentBounds (that is updateContentBounds's job).
+  function buildBackgroundCache(width, height) {
+    if (!contentBounds) return;
     bgCanvas = document.createElement('canvas');
     bgCanvas.width  = Math.max(1, Math.ceil(width  * BG_TEXTURE_RES));
     bgCanvas.height = Math.max(1, Math.ceil(height * BG_TEXTURE_RES));
@@ -241,10 +232,9 @@ const GardenMap = (() => {
     bctx.translate(-contentBounds.minX, -contentBounds.minY);
     paintGrassTexture(bctx, contentBounds.minX, contentBounds.minY, width, height);
   }
-
   // ── Canvas sizing (single source of truth for draw + hit-testing) ───────
   function resizeCanvas() {
-    const rect = canvas.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect(); // forces a synchronous reflow
     dpr = window.devicePixelRatio || 1;
     cssWidth  = rect.width;
     cssHeight = rect.height;
@@ -255,25 +245,24 @@ const GardenMap = (() => {
       canvas.height = bh;
     }
   }
-
   // ── Fit-to-view + per-axis clamp ─────────────────────────────────────────
   function clampAxis(pan, axisMin, axisMax, viewportSize) {
     const contentSize = (axisMax - axisMin) * zoom;
-    if (contentSize <= viewportSize) {
-      // Content is smaller than the viewport on this axis — centre it, no panning.
+    // Epsilon guards the equal case: at minZoom the content matches the
+    // viewport within a rounding hair, and must centre rather than pin to an
+    // edge (edge-pinning is what locked the garden low and blocked drag).
+    if (contentSize <= viewportSize + 0.5) {
       return (viewportSize - contentSize) / 2 - axisMin * zoom;
     }
     const minPan = viewportSize - axisMax * zoom;
     const maxPan = -axisMin * zoom;
     return Math.min(maxPan, Math.max(minPan, pan));
   }
-
   function clampPan() {
     if (!contentBounds) return;
     panX = clampAxis(panX, contentBounds.minX, contentBounds.maxX, cssWidth);
     panY = clampAxis(panY, contentBounds.minY, contentBounds.maxY, cssHeight);
   }
-
   function fitZoomToCanvas() {
     if (!contentBounds || !cssWidth || !cssHeight) return;
     const contentW = contentBounds.maxX - contentBounds.minX;
@@ -289,7 +278,6 @@ const GardenMap = (() => {
     }
     clampPan();
   }
-
   // ── Transform helpers ─────────────────────────────────────────────────
   function applyTransform() {
     ctx.setTransform(zoom * dpr, 0, 0, zoom * dpr, panX * dpr, panY * dpr);
@@ -297,7 +285,6 @@ const GardenMap = (() => {
   function screenToWorld(sx, sy) {
     return [(sx - panX) / zoom, (sy - panY) / zoom];
   }
-
   // ── Drawing ───────────────────────────────────────────────────────────
   function drawZone(slug, pts, isHovered, isSelected) {
     const colours = MAP_ZONE_COLOURS[slug] ?? { fill: '#999', stroke: '#666' };
@@ -314,7 +301,6 @@ const GardenMap = (() => {
     ctx.lineJoin    = 'round';
     ctx.stroke();
   }
-
   function drawLabel(slug, pts, isSelected) {
     const name = MAP_ZONE_NAMES[slug] ?? slug;
     const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
@@ -324,7 +310,6 @@ const GardenMap = (() => {
     const wPx = (Math.max(...xs) - Math.min(...xs)) * zoom;
     const hPx = (Math.max(...ys) - Math.min(...ys)) * zoom;
     if (wPx < 36 || hPx < 16) return;
-
     const fontSize = 11 / zoom;
     const padX     = 8  / zoom;
     const padY     = 5  / zoom;
@@ -332,7 +317,6 @@ const GardenMap = (() => {
     const textW = ctx.measureText(name).width;
     const pillW = textW + padX * 2;
     const pillH = fontSize + padY * 2;
-
     ctx.save();
     ctx.globalAlpha = isSelected ? 0.95 : 0.82;
     ctx.fillStyle   = 'rgba(255,252,246,0.92)';
@@ -340,7 +324,6 @@ const GardenMap = (() => {
     ctx.roundRect(cx - pillW / 2, cy - pillH / 2, pillW, pillH, pillH / 2);
     ctx.fill();
     ctx.restore();
-
     const colours = MAP_ZONE_COLOURS[slug] ?? { stroke: '#444' };
     ctx.save();
     ctx.fillStyle    = colours.stroke;
@@ -350,12 +333,10 @@ const GardenMap = (() => {
     ctx.fillText(name, cx, cy);
     ctx.restore();
   }
-
   function draw() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     applyTransform();
-
     if (bgCanvas && contentBounds) {
       ctx.drawImage(
         bgCanvas,
@@ -372,7 +353,6 @@ const GardenMap = (() => {
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
-
   // ── Hit testing ───────────────────────────────────────────────────────
   function pointInPolygon(px, py, pts) {
     let inside = false;
@@ -392,7 +372,6 @@ const GardenMap = (() => {
     }
     return null;
   }
-
   // ── Selection / panel ─────────────────────────────────────────────────
   function calcAreaM2(coords) {
     if (!coords || coords.length < 3) return null;
@@ -412,19 +391,15 @@ const GardenMap = (() => {
     }
     return Math.round(Math.abs(a / 2));
   }
-
   function showZonePanel(zoneSlug) {
   const zone        = zonesData[zoneSlug];
   const displayName = MAP_ZONE_NAMES[zoneSlug] ?? zone?.name ?? zoneSlug;
   if (!zone) return;
-
   document.getElementById('map-panel-empty').classList.add('hidden');
   document.getElementById('map-panel-content').classList.remove('hidden');
-
   const area = calcAreaM2(zone.coordinates);
   document.getElementById('map-panel-name').innerHTML =
     `${displayName}<span style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:400;color:#b0a090;margin-left:8px">${area ? area + ' m²' : ''}</span>`;
-
   document.getElementById('map-panel-props').innerHTML = [
     { label: 'Light', value: zone.light ?? '—' },
     { label: 'Soil',  value: zone.soil  ?? '—' },
@@ -433,11 +408,9 @@ const GardenMap = (() => {
       <span class="map-prop-label">${p.label}</span>
       <span class="map-prop-val">${p.value}</span>
     </div>`).join('');
-
   const zonePlants = plantsData.filter(r =>
     (r.zone || '').trim().toLowerCase() === displayName.toLowerCase()
   );
-
   document.getElementById('map-plant-list').innerHTML = !zonePlants.length
     ? `<div class="map-plant-empty">No plants recorded</div>`
     : zonePlants.map(p => {
@@ -450,7 +423,6 @@ const GardenMap = (() => {
           </div>`;
       }).join('');
 }
-
   function selectZone(slug) {
     selectedZone = slug || null;
     if (slug) {
@@ -461,7 +433,6 @@ const GardenMap = (() => {
     }
     draw();
   }
-
   // ── Mouse input ───────────────────────────────────────────────────────
   function onMouseDown(e) {
     if (e.button !== 0) return;
@@ -520,7 +491,6 @@ const GardenMap = (() => {
     clampPan();
     draw();
   }
-
   // ── Touch input (pan + pinch-zoom + tap) ──────────────────────────────
   function pinchState(touches) {
     const [a, b] = touches;
@@ -589,53 +559,62 @@ const GardenMap = (() => {
       panOrigin    = { x: panX, y: panY };
     }
   }
-
   // ── Layout / lifecycle ────────────────────────────────────────────────
+  // Single guarded entry point. Measures, rebuilds bounds+texture, fits, draws.
+  // Bails on any invalid size or missing data so a zero-size frame is a no-op
+  // instead of a wipe.
   function layout() {
     resizeCanvas();
+    if (!cssWidth || !cssHeight || !gardenBounds) return;
     plantsData = cache['plants'] ?? [];
+    updateContentBounds();
     fitZoomToCanvas();
     draw();
   }
-
-  function init() {
-    canvas = document.getElementById('garden-canvas');
-    ctx    = canvas.getContext('2d');
-
-    if (!resizeObserver) {
-      resizeObserver = new ResizeObserver(layout);
-      resizeObserver.observe(canvas.parentElement);
-      canvas.addEventListener('click',      onClick);
-      canvas.addEventListener('mousemove',  onMouseMove);
-      canvas.addEventListener('mouseleave', onMouseLeave);
-      canvas.addEventListener('wheel',      onWheel, { passive: false });
-      canvas.addEventListener('mousedown',  onMouseDown);
-      window.addEventListener('mouseup',    onMouseUp);
-      canvas.addEventListener('touchstart', onTouchStart, { passive: false });
-      canvas.addEventListener('touchmove',  onTouchMove,  { passive: false });
-      canvas.addEventListener('touchend',   onTouchEnd,   { passive: false });
-    }
-
-    if (!dataLoaded) {
-      dataLoaded = true;
-      loadZoneData().then(() => {
-        projectZones();
-        resizeCanvas();
-        buildBackgroundCache();
-        layout();
-      });
-    } else {
-      layout();
-    }
+  // ResizeObserver handler. Uses the size the observer measured and ignores
+  // zero-size frames (which is every frame while the tab is display:none).
+  function onResize(entries) {
+    const box = entries[0]?.contentRect;
+    if (!box || box.width < 1 || box.height < 1) return;
+    layout();
   }
-
+function init() {
+  canvas = document.getElementById('garden-canvas');
+  ctx    = canvas.getContext('2d');
+  firstFit = true; // every activation re-centres to a clean fit
+  if (!resizeObserver) {
+    resizeObserver = new ResizeObserver(onResize);
+    resizeObserver.observe(canvas.parentElement);
+    canvas.addEventListener('click',      onClick);
+    canvas.addEventListener('mousemove',  onMouseMove);
+    canvas.addEventListener('mouseleave', onMouseLeave);
+    canvas.addEventListener('wheel',      onWheel, { passive: false });
+    canvas.addEventListener('mousedown',  onMouseDown);
+    window.addEventListener('mouseup',    onMouseUp);
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    canvas.addEventListener('touchend',   onTouchEnd,   { passive: false });
+  }
+  if (!dataLoaded) {
+    dataLoaded = true;
+    loadZoneData().then(() => {
+      projectZones();
+      // Explicit first fit, deferred one frame so the canvas is measured after
+      // the browser has laid it out. The observer only covers later resizes.
+      requestAnimationFrame(layout);
+    });
+  } else {
+    // Re-entry: the tab was just un-hidden. Defer one frame so the container
+    // has its real size, then fit. firstFit is already true above, so this is
+    // a clean centred re-fit rather than a stale, edge-clamped pan.
+    requestAnimationFrame(layout);
+  }
+}
   return { init };
 })();
-
 function initMap() {
   GardenMap.init();
 }
-
 // ── Tab switching ─────────────────────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
