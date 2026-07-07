@@ -16,7 +16,6 @@ const NET_ZONE_ADJACENCY = [
   ['Side Garden', 'House'],
   ['Lower Back Garden', 'Upper Back Garden'],
 ];
-
 const NET_ZONE_COLOURS = {
   'Woods':             { bg: '#d1ead4', border: '#2a6b30', text: '#1a4a20' },
   'Field':             { bg: '#f5f0c0', border: '#8a7a20', text: '#5a5010' },
@@ -29,27 +28,24 @@ const NET_ZONE_COLOURS = {
   'Back Field':        { bg: '#f0e8c0', border: '#7a6a20', text: '#4a4010' },
   'House':             { bg: '#f0e0d0', border: '#7a5030', text: '#4a2010' },
 };
-
 // ── State ─────────────────────────────────────────────────────────────────
 let netCy           = null;
 let netInitialised  = false;
 let netSelectedNode = null;
 let netActiveZone   = 'all';
-
+let netActiveType   = 'all';
 // ── Init ──────────────────────────────────────────────────────────────────
 function initNetwork() {
   if (netInitialised) return;
   netInitialised = true;
-
   const plants = cache['plants'] ?? [];
   buildNetworkGraph(plants);
   buildNetSidebar(plants);
+  buildNetTypeFilters(plants);
   buildNetLegend();
-
   document.getElementById('net-card-close').addEventListener('click', hideNetCard);
   document.getElementById('net-reset-btn').addEventListener('click', resetNetwork);
 }
-
 // ── Hex helper ────────────────────────────────────────────────────────────
 function hexToRgba(hex, alpha) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -57,29 +53,28 @@ function hexToRgba(hex, alpha) {
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r},${g},${b},${alpha})`;
 }
-
 // ── Build graph ───────────────────────────────────────────────────────────
-function buildNetworkGraph(plants, zoneFilter = 'all') {
+function buildNetworkGraph(plants, zoneFilter = netActiveZone, typeFilter = netActiveType) {
   if (netCy) { netCy.destroy(); netCy = null; }
-
   const zones         = [...new Set(plants.map(p => p.zone).filter(Boolean))];
-  const filteredZones = zoneFilter === 'all' ? zones : [zoneFilter];
-  const filteredPlants = plants.filter(p => filteredZones.includes(p.zone));
-
+  const filteredZones  = zoneFilter === 'all' ? zones : [zoneFilter];
+  let filteredPlants   = plants.filter(p => filteredZones.includes(p.zone));
+  if (typeFilter !== 'all') {
+    filteredPlants = filteredPlants.filter(p => p.type === typeFilter);
+  }
   const plantMap = {};
   filteredPlants.forEach(p => {
     const key = p.plant;
     if (!plantMap[key]) plantMap[key] = { zones: [], life_cycle: p.life_cycle, type: p.type };
     plantMap[key].zones.push(p.zone);
   });
-
+  // Only keep zones that still have plants (or, if a type filter is active,
+  // keep all filteredZones so the zone nodes remain visible as context)
   const zoneDeg = {};
   filteredZones.forEach(z => zoneDeg[z] = 0);
   Object.values(plantMap).forEach(p => p.zones.forEach(z => zoneDeg[z]++));
   const maxDeg = Math.max(...Object.values(zoneDeg), 1);
-
   const elements = [];
-
   // Zone nodes
   filteredZones.forEach(z => {
     const c    = NET_ZONE_COLOURS[z] ?? { bg: '#e0e0e0', border: '#888', text: '#333' };
@@ -88,7 +83,6 @@ function buildNetworkGraph(plants, zoneFilter = 'all') {
       data: { id: 'z-' + z, label: z, type: 'zone', zone: z, size, bg: c.bg, border: c.border, textCol: c.text }
     });
   });
-
   // Zone adjacency edges
   NET_ZONE_ADJACENCY.forEach(([a, b]) => {
     if (filteredZones.includes(a) && filteredZones.includes(b)) {
@@ -97,7 +91,6 @@ function buildNetworkGraph(plants, zoneFilter = 'all') {
       });
     }
   });
-
   // Plant nodes + membership edges
   Object.entries(plantMap).forEach(([name, data]) => {
     const col = PLANT_TYPE_COLOURS[data.type] ?? '#c17f4a';
@@ -121,7 +114,6 @@ function buildNetworkGraph(plants, zoneFilter = 'all') {
       });
     });
   });
-
   netCy = window.cytoscape({
     container: document.getElementById('net-cy'),
     elements,
@@ -227,10 +219,8 @@ function buildNetworkGraph(plants, zoneFilter = 'all') {
     minZoom: 0.2,
     maxZoom: 4,
   });
-
   setupNetEvents();
 }
-
 // ── Events ────────────────────────────────────────────────────────────────
 function setupNetEvents() {
   netCy.on('tap', 'node', e => {
@@ -248,7 +238,6 @@ function setupNetEvents() {
     showNetCard(node);
     updateNetSel(node);
   });
-
   netCy.on('tap', e => {
     if (e.target === netCy) {
       netCy.elements().removeClass('selected-node selected-edge neighbour-node dimmed');
@@ -257,23 +246,18 @@ function setupNetEvents() {
       netSelectedNode = null;
     }
   });
-
   netCy.on('pan zoom resize', () => {
     if (netSelectedNode) positionNetCard(netSelectedNode);
   });
-
   netCy.on('mouseover', 'node', () => { document.body.style.cursor = 'pointer'; });
   netCy.on('mouseout',  'node', () => { document.body.style.cursor = 'default'; });
 }
-
 // ── Card ──────────────────────────────────────────────────────────────────
 function showNetCard(node) {
   const d    = node.data();
   const card = document.getElementById('net-card');
-
   document.getElementById('net-card-name').textContent = d.label;
   document.getElementById('net-card-type').textContent = d.type === 'zone' ? 'Zone' : d.plantType ?? 'Plant';
-
   if (d.type === 'zone') {
     const zonePlants = (cache['plants'] ?? []).filter(p => p.zone === d.zone);
     document.getElementById('net-card-rows').innerHTML = `
@@ -285,11 +269,9 @@ function showNetCard(node) {
       <div class="net-card-row"><span class="net-card-key">Life cycle</span><span class="net-card-val">${d.life_cycle}</span></div>
       <div class="net-card-row"><span class="net-card-key">Type</span><span class="net-card-val">${d.plantType ?? '—'}</span></div>`;
   }
-
   card.style.display = 'block';
   positionNetCard(node);
 }
-
 function positionNetCard(node) {
   const card = document.getElementById('net-card');
   if (card.style.display === 'none') return;
@@ -306,11 +288,9 @@ function positionNetCard(node) {
   card.style.left = Math.max(m, left) + 'px';
   card.style.top  = Math.max(m, top)  + 'px';
 }
-
 function hideNetCard() {
   document.getElementById('net-card').style.display = 'none';
 }
-
 // ── Sel box ───────────────────────────────────────────────────────────────
 function updateNetSel(node) {
   const d = node.data();
@@ -320,17 +300,14 @@ function updateNetSel(node) {
     ? `Zone · ${node.connectedEdges().length} connections`
     : `${d.plantType ?? 'Plant'} · Degree: ${node.connectedEdges().length}`;
 }
-
 function clearNetSel() {
   document.getElementById('net-sel-box').style.display = 'none';
 }
-
-// ── Sidebar ───────────────────────────────────────────────────────────────
+// ── Sidebar: Zone filters ────────────────────────────────────────────────
 function buildNetSidebar(plants) {
   const zones     = ['all', ...Object.keys(NET_ZONE_COLOURS)];
   const container = document.getElementById('net-zone-filters');
   container.innerHTML = '';
-
   zones.forEach(z => {
     const btn = document.createElement('div');
     btn.className      = 'net-filter-row' + (z === 'all' ? ' active' : '');
@@ -338,40 +315,53 @@ function buildNetSidebar(plants) {
     const col          = z === 'all' ? '#3d2b1f' : (NET_ZONE_COLOURS[z]?.border ?? '#888');
     btn.innerHTML      = `<div class="net-dot" style="background:${col}"></div>${z === 'all' ? 'All zones' : z}`;
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.net-filter-row[data-zone]').forEach(b => b.classList.remove('active'));
+      container.querySelectorAll('.net-filter-row').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       netActiveZone   = z;
       netSelectedNode = null;
       hideNetCard();
       clearNetSel();
-      buildNetworkGraph(plants, z === 'all' ? 'all' : z);
+      buildNetworkGraph(plants);
     });
     container.appendChild(btn);
   });
 }
-
+// ── Sidebar: Type filters (was empty — now interactive) ──────────────────
+function buildNetTypeFilters(plants) {
+  const types     = ['all', ...Object.keys(PLANT_TYPE_COLOURS)];
+  const container = document.getElementById('net-type-filters');
+  container.innerHTML = '';
+  types.forEach(t => {
+    const btn = document.createElement('div');
+    btn.className    = 'net-filter-row' + (t === 'all' ? ' active' : '');
+    btn.dataset.type = t;
+    const col        = t === 'all' ? '#3d2b1f' : (PLANT_TYPE_COLOURS[t] ?? '#c17f4a');
+    btn.innerHTML    = `<div class="net-dot" style="background:${col}"></div>${t === 'all' ? 'All types' : t}`;
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.net-filter-row').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      netActiveType   = t;
+      netSelectedNode = null;
+      hideNetCard();
+      clearNetSel();
+      buildNetworkGraph(plants);
+    });
+    container.appendChild(btn);
+  });
+}
+// ── Legend (trimmed to non-filterable line styles only) ──────────────────
 function buildNetLegend() {
   const container = document.getElementById('net-legend');
   container.innerHTML = '';
-
   const adjacencyItem = document.createElement('div');
   adjacencyItem.className = 'net-legend-item';
   adjacencyItem.innerHTML = `<div class="net-legend-line net-legend-adjacency"></div>Zone adjacency`;
   container.appendChild(adjacencyItem);
-
   const memberItem = document.createElement('div');
   memberItem.className = 'net-legend-item';
   memberItem.innerHTML = `<div class="net-legend-line net-legend-membership"></div>Plant membership`;
   container.appendChild(memberItem);
-
-  Object.entries(PLANT_TYPE_COLOURS).forEach(([type, col]) => {
-    const item = document.createElement('div');
-    item.className = 'net-legend-item';
-    item.innerHTML = `<div class="net-dot" style="background:${col};border:1.5px solid ${col}"></div>${type}`;
-    container.appendChild(item);
-  });
 }
-
 // ── Reset ─────────────────────────────────────────────────────────────────
 function resetNetwork() {
   if (!netCy) return;
