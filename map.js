@@ -428,8 +428,7 @@ const GardenMap = (() => {
     if (slug) {
       showZonePanel(slug);
     } else {
-      document.getElementById('map-panel-empty').classList.remove('hidden');
-      document.getElementById('map-panel-content').classList.add('hidden');
+      showGardenPanel();
     }
     draw();
   }
@@ -559,6 +558,42 @@ const GardenMap = (() => {
       panOrigin    = { x: panX, y: panY };
     }
   }
+
+  function showGardenPanel() {
+    document.getElementById('map-panel-empty').classList.add('hidden');
+    document.getElementById('map-panel-content').classList.remove('hidden');
+    const totalArea = Object.values(zonesData).reduce((sum, z) => {
+      const a = calcAreaM2(z.coordinates);
+      return sum + (a || 0);
+    }, 0);
+    document.getElementById('map-panel-name').innerHTML =
+      `Garden<span style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:400;color:#b0a090;margin-left:8px">${totalArea} m²</span>`;
+    const zoneCount  = Object.keys(zonesData).length;
+    const plantCount = plantsData.length;
+    document.getElementById('map-panel-props').innerHTML = [
+      { label: 'Zones',  value: zoneCount },
+      { label: 'Plants', value: plantCount },
+    ].map(p => `
+      <div class="map-prop-row">
+        <span class="map-prop-label">${p.label}</span>
+        <span class="map-prop-val">${p.value}</span>
+      </div>`).join('');
+    const sortedPlants = [...plantsData].sort((a, b) =>
+      (a.plant || '').localeCompare(b.plant || '')
+    );
+    document.getElementById('map-plant-list').innerHTML = !sortedPlants.length
+      ? `<div class="map-plant-empty">No plants recorded</div>`
+      : sortedPlants.map(p => {
+          const dotColour = PLANT_TYPE_COLOURS[p.type] ?? '#c17f4a';
+          return `
+            <div class="map-plant-row">
+              <div class="map-plant-dot" style="background:${dotColour}"></div>
+              <span class="map-plant-name">${p.plant}</span>
+              <span class="map-plant-cycle">${p.life_cycle ?? ''}</span>
+            </div>`;
+        }).join('');
+  }
+
   // ── Layout / lifecycle ────────────────────────────────────────────────
   // Single guarded entry point. Measures, rebuilds bounds+texture, fits, draws.
   // Bails on any invalid size or missing data so a zero-size frame is a no-op
@@ -570,6 +605,7 @@ const GardenMap = (() => {
     updateContentBounds();
     fitZoomToCanvas();
     draw();
+    if (selectedZone === null) showGardenPanel();
   }
   // ResizeObserver handler. Uses the size the observer measured and ignores
   // zero-size frames (which is every frame while the tab is display:none).

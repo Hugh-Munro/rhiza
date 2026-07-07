@@ -34,6 +34,28 @@ const PLANT_TYPE_COLOURS = {
   'Succulent':  '#6ab8a0',
 };
 
+const LIGHTING_ICONS = {
+  'Full Sun':      { icon: 'ti-sun',   bg: '#FAEEDA', fg: '#854F0B', pillBg: '#FAC775', pillFg: '#412402' },
+  'Partial Shade': { icon: 'ti-cloud', bg: '#EAF3DE', fg: '#3B6D11', pillBg: '#97C459', pillFg: '#173404' },
+  'Full Shade':    { icon: 'ti-moon',  bg: '#DDEDE7', fg: '#0F5C4B', pillBg: '#5DCAA5', pillFg: '#04342C' },
+  'Indirect':      { icon: 'ti-home',  bg: '#E6F1FB', fg: '#185FA5', pillBg: '#85B7EB', pillFg: '#042C53' },
+};
+
+const LIFE_CYCLE_ICONS = { 'Perennial': 'ti-refresh', 'Annual': 'ti-calendar', 'Biennial': 'ti-calendar-repeat' };
+const TYPE_ICONS = {
+  'Tree': 'ti-tree', 'Shrub': 'ti-plant', 'Climber': 'ti-arrow-up-right',
+  'Fern': 'ti-leaf', 'Perennial': 'ti-flower', 'Wildflower': 'ti-flower',
+  'Bulb': 'ti-circle', 'Grass': 'ti-grain', 'Fruit': 'ti-apple',
+  'Herb': 'ti-leaf', 'Biennial': 'ti-calendar-repeat', 'Vegetable': 'ti-carrot',
+  'Succulent': 'ti-cactus',
+};
+
+function lightingBadge(lighting) {
+  const l = LIGHTING_ICONS[lighting];
+  if (!l) return '';
+  return `<span class="lighting-badge" style="background:${l.bg};color:${l.fg}"><i class="ti ${l.icon}"></i></span>`;
+}
+
 function zonePill(zone) {
   if (!zone) return '';
   const style = ZONE_COLOURS[zone]
@@ -51,6 +73,7 @@ const TABS = {
     filterCols: {
       zone:       'Zone',
       life_cycle: 'Life Cycle',
+      lighting:   'Lighting',
     },
   },
 };
@@ -203,6 +226,7 @@ function renderGrid(rows) {
     const zone    = r['zone'] || '';
     const life    = r['life_cycle'] || '';
     const type    = r['type'] || '';
+    const lighting = r['lighting'] || '';
     const imgUrl  = photoCache[name];
     const cardImg = imgUrl
       ? `<img src="${imgUrl}" alt="${name}" />`
@@ -218,6 +242,7 @@ function renderGrid(rows) {
             <div class="card-img">
               ${cardImg}
               ${zonePill(zone)}
+              ${lightingBadge(lighting)}
             </div>
             <div class="card-body">
               <div class="card-title">${name}</div>
@@ -225,10 +250,11 @@ function renderGrid(rows) {
           </div>
           <div class="card-back">
             <div class="card-back-title">${name}</div>
+            ${zone ? `<div class="card-back-location"><i class="ti ti-map-pin"></i><span>${zone}</span></div>` : ''}
             <div class="card-back-divider"></div>
-            ${zone ? `<div class="card-back-label">Zone</div><div class="card-back-value">${zone}</div>` : ''}
-            ${life ? `<div class="card-back-label">Life Cycle</div><span class="card-back-pill">${life}</span>` : ''}
-            ${type ? `<div class="card-back-label">Type</div><span class="card-back-pill" style="background:${typeBg};color:${baseCol}">${type}</span>` : ''}
+            ${life ? `<div class="card-back-row"><span class="card-back-label">Life Cycle</span><span class="card-back-pill" style="background:${baseCol}33;color:${baseCol}">${life}</span></div>` : ''}
+            ${type ? `<div class="card-back-row"><span class="card-back-label">Type</span><span class="card-back-pill" style="background:${typeBg};color:${baseCol}">${type}</span></div>` : ''}
+            ${lighting ? `<div class="card-back-row"><span class="card-back-label">Lighting</span><span class="card-back-pill" style="background:${LIGHTING_ICONS[lighting]?.pillBg};color:${LIGHTING_ICONS[lighting]?.pillFg}">${lighting}</span></div>` : ''}
           </div>
         </div>
       </div>`;
