@@ -1,5 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
-  <rect width="144" height="144" rx="28" fill="#3d2b1f"/>
-  <path d="M72 112 C72 112 72 60 72 46 C72 28 52 18 32 22 C52 28 66 46 72 60" stroke="#f0e6d3" stroke-width="8" stroke-linecap="round" fill="none"/>
-  <path d="M72 82 C72 82 72 60 84 48 C96 36 116 36 116 36 C116 36 104 54 84 66 C78 69.5 72 82 72 82" stroke="#f0e6d3" stroke-width="8" stroke-linecap="round" fill="none"/>
+<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="240" height="240" rx="48" fill="#3B2E22"/>
+  <g transform="translate(30,30)">
+    <g fill="none" stroke="#F0E6D2" stroke-linecap="round">
+      <path d="M90 90 C90 90 96 60 88 28" stroke-width="9.5"/>
+      <path d="M88 28 C88 28 80 16 70 8" stroke-width="3"/>
+      <path d="M88 28 C88 28 98 18 108 12" stroke-width="3"/>
+
+      <path d="M90 90 C90 90 124 72 142 44" stroke-width="7"/>
+      <path d="M142 44 C142 44 154 36 166 30" stroke-width="2.6"/>
+
+      <path d="M90 90 C90 90 126 98 154 100" stroke-width="6"/>
+      <path d="M154 100 C154 100 168 98 178 92" stroke-width="2.4"/>
+      <path d="M154 100 C154 100 166 108 174 116" stroke-width="2.4"/>
+
+      <path d="M90 90 C90 90 104 126 108 152" stroke-width="7"/>
+      <path d="M108 152 C108 152 114 166 124 176" stroke-width="2.8"/>
+
+      <path d="M90 90 C90 90 76 116 66 148" stroke-width="8"/>
+      <path d="M66 148 C66 148 58 162 60 176" stroke-width="3"/>
+      <path d="M66 148 C66 148 52 154 42 162" stroke-width="3"/>
+
+      <path d="M90 90 C90 90 54 100 32 122" stroke-width="6"/>
+      <path d="M32 122 C32 122 18 128 6 136" stroke-width="2.4"/>
+
+      <path d="M90 90 C90 90 52 86 24 74" stroke-width="7"/>
+      <path d="M24 74 C24 74 10 70 0 62" stroke-width="2.8"/>
+      <path d="M24 74 C24 74 16 86 12 98" stroke-width="2.8"/>
+
+      <path d="M90 90 C90 90 70 60 54 32" stroke-width="6"/>
+      <path d="M54 32 C54 32 44 22 32 16" stroke-width="2.4"/>
+    </g>
+    <circle cx="90" cy="90" r="8" fill="#F0E6D2"/>
+  </g>
 </svg>
